@@ -81,7 +81,7 @@ function handleSubmit() {
     <Toaster />
     <Head title="One Time Secrets" />
     <div class="flex min-h-screen flex-col items-center lg:justify-center p-4 md:p-8 w-full">
-        <form @submit.prevent="handleSubmit" class="max-w-2xl">
+        <form @submit.prevent="handleSubmit" class="w-full max-w-2xl">
             <Card class="shadow-xl">
                 <CardHeader>
                     <CardTitle>One Time Secrets</CardTitle>

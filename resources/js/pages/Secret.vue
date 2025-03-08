@@ -37,28 +37,30 @@ function handleCopy() {
     <Toaster />
     <Head title="One Time Secrets" />
     <div class="flex min-h-screen flex-col items-center lg:justify-center p-4 md:p-8 w-full">
-        <Card class="shadow-xl max-w-2xl">
-            <CardHeader>
-                <CardTitle>Secure secret!</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-4">
-                <Alert v-if="revealed" variant="destructive">
-                    <AlertCircle class="w-4 h-4" />
-                    <AlertTitle>This secret has been obliterated.</AlertTitle>
-                    <AlertDescription>
-                        Please be sure to store it in a safe place before closing this page.
-                    </AlertDescription>
-                </Alert>
-                <SecretContentInput v-show="revealed" v-model="content" />
-            </CardContent>
-            <CardFooter>
-                <Button v-if="!revealed" type="button" @click="revealed = !revealed" class="w-full" size="lg">
-                    <Eye class="size-4 mr-1" /> Reveal secret
-                </Button>
-                <Button v-else type="button" @click="handleCopy" class="w-full" size="lg">
-                    <Copy class="size-4 mr-1" /> Copy secret
-                </Button>
-            </CardFooter>
-        </Card>
+        <div class="w-full max-w-2xl">
+            <Card class="shadow-xl">
+                <CardHeader>
+                    <CardTitle>Secure secret!</CardTitle>
+                </CardHeader>
+                <CardContent class="space-y-4">
+                    <Alert v-if="revealed" variant="destructive">
+                        <AlertCircle class="w-4 h-4" />
+                        <AlertTitle>This secret has been obliterated.</AlertTitle>
+                        <AlertDescription>
+                            Please be sure to store it in a safe place before closing this page.
+                        </AlertDescription>
+                    </Alert>
+                    <SecretContentInput v-show="revealed" v-model="content" />
+                </CardContent>
+                <CardFooter>
+                    <Button v-if="!revealed" type="button" @click="revealed = !revealed" class="w-full" size="lg">
+                        <Eye class="size-4 mr-1" /> Reveal secret
+                    </Button>
+                    <Button v-else type="button" @click="handleCopy" class="w-full" size="lg">
+                        <Copy class="size-4 mr-1" /> Copy secret
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
     </div>
 </template>
