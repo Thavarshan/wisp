@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Secret;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ShareSecretControllerTest extends TestCase
@@ -17,7 +18,7 @@ class ShareSecretControllerTest extends TestCase
         $response = $this->get(route('secrets.share', ['secret' => $secret->uid]));
 
         $response->assertInertia(
-            fn ($page) => $page
+            fn (Assert $page) => $page
                 ->component('Share')
                 ->where('link', $secret->getShareLink())
                 ->where('expired_at', $secret->expired_at->format('F j, Y \a\t g:i:s A'))

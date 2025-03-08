@@ -40,7 +40,7 @@ class SecretController extends Controller implements HasMiddleware
     public function show(Secret $secret): InertiaResponse|Response
     {
         $secret->delete();
-        
+
         return Inertia::render('Secret', [
             'secret' => Crypt::decrypt($secret->content),
         ]);

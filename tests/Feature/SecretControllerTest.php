@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Secret;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class SecretControllerTest extends TestCase
@@ -29,7 +30,7 @@ class SecretControllerTest extends TestCase
         $response = $this->get(route('secrets.show', $secret));
 
         $response->assertInertia(
-            fn ($page) => $page
+            fn (Assert $page) => $page
                 ->component('Secret')
                 ->where('secret', Crypt::decrypt($secret->content))
         );
