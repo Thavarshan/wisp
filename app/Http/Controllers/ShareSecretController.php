@@ -18,7 +18,7 @@ class ShareSecretController extends Controller
 
         return Inertia::render('Share', [
             'link' => $secret->getShareLink(),
-            'expired_at' => $secret->expired_at->format('F j, Y \a\t g:i:s A'),
+            'expired_at' => $secret->expired_at->diffForHumans(),
         ]);
     }
 }

@@ -29,7 +29,7 @@ class SecretController extends Controller implements HasMiddleware
      */
     public function store(StoreSecretRequest $request): RedirectResponse
     {
-        $secret = Secret::create($request->validated());
+        $secret = Secret::create($request->getValidatedData());
 
         return redirect()->route('secrets.share', ['secret' => $secret->uid]);
     }
@@ -39,10 +39,15 @@ class SecretController extends Controller implements HasMiddleware
      */
     public function show(Secret $secret): InertiaResponse|Response
     {
-        $secret->delete();
+        $hasPassword = $secret->hasPassword();
+
+        if (! $hasPassword) {
+            $secret->delete();
+        }
 
         return Inertia::render('Secret', [
             'secret' => Crypt::decrypt($secret->content),
+            'has_password' => $hasPassword,
         ]);
     }
 

@@ -17,7 +17,7 @@ import { getExpirationDate } from '@/lib/utils';
 const form = useForm<SecretsForm>({
     name: '',
     content: '',
-    expired_at: '5 mins',
+    expired_at: '5m',
     password: '',
     password_protect: false,
 });
@@ -52,28 +52,21 @@ const passwordProtect = computed({
 
 // Submit the form with ISO string date
 function handleSubmit() {
-    form
-        .transform((data) => {
-            return {
-                ...data,
-                expired_at: getExpirationDate(data.expired_at),  // Convert to ISO string
-            };
-        })
-        .post(route('secrets.store'), {
-            onSuccess: () => {
-                form.reset();
-                toast({
-                    title: 'Success',
-                    description: 'Your secret has been stored successfully.',
-                });
-            },
-            onError: () => {
-                toast({
-                    title: 'Error',
-                    description: 'There was an error storing your secret. Please try again.',
-                });
-            },
-        });
+    form.post(route('secrets.store'), {
+        onSuccess: () => {
+            form.reset();
+            toast({
+                title: 'Success',
+                description: 'Your secret has been stored successfully.',
+            });
+        },
+        onError: () => {
+            toast({
+                title: 'Error',
+                description: 'There was an error storing your secret. Please try again.',
+            });
+        },
+    });
 }
 </script>
 

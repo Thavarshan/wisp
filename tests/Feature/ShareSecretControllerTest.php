@@ -21,7 +21,7 @@ class ShareSecretControllerTest extends TestCase
             fn (Assert $page) => $page
                 ->component('Share')
                 ->where('link', $secret->getShareLink())
-                ->where('expired_at', $secret->expired_at->format('F j, Y \a\t g:i:s A'))
+                ->where('expired_at', $secret->expired_at->diffForHumans())
         );
     }
 }

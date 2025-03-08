@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 
-const expirationOptions = [
-    '5 mins',
-    '30 mins',
-    '1 hour',
-    '6 hours',
-    '12 hours',
-    '1 day',
-];
+const expirationOptions = {
+    '5 mins': '5m',
+    '30 mins': '30m',
+    '1 hour': '1h',
+    '6 hours': '6h',
+    '12 hours': '12h',
+    '1 day': '1d',
+};
 
 defineProps<{ modelValue: string; }>();
 defineEmits(['update:modelValue']);
@@ -17,17 +17,17 @@ defineEmits(['update:modelValue']);
 <template>
     <div class="flex items-center justify-between gap-4">
         <Button
-            v-for="(option, index) in expirationOptions"
+            v-for="(value, label) in expirationOptions"
             type="button"
-            :key="index"
-            @click="$emit('update:modelValue', option)"
+            :key="value"
+            @click="$emit('update:modelValue', value)"
             :class="{
-                'bg-primary text-primary-foreground': modelValue === option,
-                'bg-muted text-accent-foreground': modelValue !== option
+                'bg-primary text-primary-foreground': modelValue === value,
+                'bg-muted text-accent-foreground': modelValue !== value
             }"
             class="w-full transition-colors hover:text-white dark:hover:text-accent-foreground"
         >
-            {{ option }}
+            {{ label }}
         </Button>
     </div>
 </template>

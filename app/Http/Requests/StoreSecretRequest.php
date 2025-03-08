@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ExpirationOption;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSecretRequest extends FormRequest
 {
@@ -22,9 +24,22 @@ class StoreSecretRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => ['nullable', 'string'],
             'content' => ['required', 'string'],
-            'expired_at' => ['required', 'date', 'after:now'],
+            'expired_at' => ['required', 'string', Rule::enum(ExpirationOption::class)],
             'password' => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * Handle a passed validation attempt.
+     */
+    public function getValidatedData(): array
+    {
+        $data = $this->validated();
+
+        return array_merge($data, [
+            'expired_at' => ExpirationOption::parse($data['expired_at']),
+        ]);
     }
 }

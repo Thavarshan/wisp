@@ -49,7 +49,7 @@ function handleDelete() {
             <p class="text-muted-foreground">Share the link below with the recipient. The secret will be obliterated after a single view or when it expires.</p>
             <div>
                 <Badge>
-                    Expires - {{ expired_at }}
+                    Expires {{ expired_at }}
                 </Badge>
             </div>
 

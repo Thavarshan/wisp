@@ -11,10 +11,10 @@ return new class extends Migration
         Schema::create('secrets', function (Blueprint $table) {
             $table->id();
             $table->string('uid')->unique();
+            $table->string('name')->nullable();
             $table->text('content');
             $table->string('password')->nullable()->unique();
-            $table->timestamp('expired_at')->nullable();
-            $table->timestamp('viewed_at')->nullable();
+            $table->timestamp('expired_at');
             $table->timestamps();
         });
     }

@@ -20,10 +20,10 @@ class Secret extends Model
      */
     protected $fillable = [
         'uid',
+        'name',
         'content',
         'password',
         'expired_at',
-        'viewed_at',
     ];
 
     /**
@@ -76,6 +76,14 @@ class Secret extends Model
     }
 
     /**
+     * Determine if the secret has a password.
+     */
+    public function hasPassword(): bool
+    {
+        return ! blank($this->password);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -84,7 +92,6 @@ class Secret extends Model
     {
         return [
             'expired_at' => 'datetime',
-            'viewed_at' => 'datetime',
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExpirationOption;
 use App\Models\Secret;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
@@ -16,7 +17,7 @@ class SecretControllerTest extends TestCase
     {
         $response = $this->post(route('secrets.store'), [
             'content' => 'This is a secret',
-            'expired_at' => now()->addDay(),
+            'expired_at' => ExpirationOption::ONE_DAY->value,
         ]);
 
         $response->assertRedirect(route('secrets.share', ['secret' => Secret::first()->uid]));
@@ -25,7 +26,10 @@ class SecretControllerTest extends TestCase
 
     public function test_it_displays_a_secret(): void
     {
-        $secret = Secret::create(['content' => Crypt::encrypt('This is a secret')]);
+        $secret = Secret::create([
+            'expired_at' => ExpirationOption::parse(ExpirationOption::ONE_DAY->value),
+            'content' => Crypt::encrypt('This is a secret'),
+        ]);
 
         $response = $this->get(route('secrets.show', $secret));
 
@@ -40,7 +44,10 @@ class SecretControllerTest extends TestCase
 
     public function test_it_destroys_a_secret(): void
     {
-        $secret = Secret::create(['content' => 'This is a secret']);
+        $secret = Secret::create([
+            'expired_at' => ExpirationOption::parse(ExpirationOption::ONE_DAY->value),
+            'content' => Crypt::encrypt('This is a secret'),
+        ]);
 
         $response = $this->delete(route('secrets.destroy', $secret));
 
