@@ -1,0 +1,89 @@
+<script setup lang="ts">
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Copy } from 'lucide-vue-next';
+import { computed, watch, nextTick } from 'vue';
+import { useToast } from '@/components/ui/toast';
+import copy from 'copy-to-clipboard';
+import { generateSecurePassword } from '@/lib/utils';
+
+const props = defineProps<{
+    password?: string;       // Password value
+    enabled: boolean;       // Toggle state for password protection
+}>();
+
+const emit = defineEmits(['update:password', 'update:enabled']);
+
+const { toast } = useToast();
+
+// Computed for password value
+const passwordValue = computed({
+    get: () => props.password,
+    set: (value) => emit('update:password', value)
+});
+
+// Computed for toggle state
+const isEnabled = computed({
+    get: () => props.enabled,
+    set: (value) => emit('update:enabled', value)
+});
+
+// Handle copy to clipboard
+function handleCopy() {
+    if (passwordValue.value) {
+        copy(passwordValue.value);
+        toast({
+            title: 'Copied!',
+            description: 'Password copied to clipboard.',
+        });
+    }
+}
+
+watch(isEnabled, async (value) => {
+    if (value && !passwordValue.value) {
+        await nextTick();  // Ensure the DOM and state are updated first
+        const generatedPassword = generateSecurePassword();
+        emit('update:password', generatedPassword);  // Emit the generated password
+        toast({
+            title: 'Generated!',
+            description: 'A secure password has been generated.',
+        });
+    } else if (!value) {
+        emit('update:password', '');  // Clear password if disabled
+    }
+});
+
+</script>
+
+<template>
+    <div class="flex items-center justify-between h-10">
+        <!-- Password Protect Toggle -->
+        <div class="flex items-center">
+            <Label class="flex items-center gap-3 cursor-pointer">
+                <Checkbox v-model:checked="isEnabled" />
+                Password protect
+            </Label>
+        </div>
+
+        <!-- Password Input and Copy Button (Shown only if enabled) -->
+        <div v-if="isEnabled" class="relative flex items-center">
+            <Input
+                v-model="passwordValue"
+                type="text"
+                placeholder="Enter password"
+                class="w-64 pr-10"
+            />
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                @click="handleCopy"
+                class="absolute right-0 mr-1"
+            >
+                <Copy class="size-4" />
+            </Button>
+        </div>
+    </div>
+</template>
