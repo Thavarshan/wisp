@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Textarea } from '@/components/ui/textarea';
 import { computed } from 'vue';
-import { Info } from 'lucide-vue-next';
 
 const props = defineProps<{
     modelValue: string;
@@ -25,8 +24,7 @@ const secretContent = computed({
             required
         />
 
-        <div class="mt-2 flex items-center">
-            <Info class="size-3 mr-2 text-primary" />
+        <div class="mt-2">
             <p class="text-xs text-muted-foreground">The secret's content is permanently erased after a single view or when it reaches its expiration time.</p>
         </div>
     </div>

@@ -11,6 +11,7 @@ import NameInput from '@/components/NameInput.vue';
 import ExpirationOptions from '@/components/ExpirationOptions.vue';
 import PasswordProtection from '@/components/PasswordProtection.vue';
 import { SecretsForm } from '@/types';
+import AppLogo from '@/components/AppLogo.vue';
 
 // Initialize form with a default expiration of 5 minutes
 const form = useForm<SecretsForm>({
@@ -76,9 +77,9 @@ function handleSubmit() {
         <form @submit.prevent="handleSubmit" class="w-full max-w-2xl">
             <Card class="shadow-xl">
                 <CardHeader>
-                    <img src="/images/logo.svg" alt="One Time Secrets" class="h-12 mx-auto" />
+                    <AppLogo href="/" class="h-12 mx-auto" title="Cryptide" />
                     <CardDescription class="mt-2 space-y-3 text-center">
-                        <p class="text-accent-foreground text-lg">Share a confidential, one-time secret through a secure link that automatically expires.</p>
+                        <p class="text-accent-foreground text-normal sm:text-lg">Share a confidential, one-time secret through a secure link that automatically expires.</p>
                     </CardDescription>
                 </CardHeader>
                 <CardContent class="space-y-4">

@@ -15,7 +15,7 @@ defineEmits(['update:modelValue']);
 </script>
 
 <template>
-    <div class="flex items-center justify-between gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
         <Button
             v-for="(value, label) in expirationOptions"
             type="button"
