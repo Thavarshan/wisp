@@ -1,6 +1,6 @@
-# Crysper - One-Time Secret Sharing Application
+# Cryptide - One-Time Secret Sharing Application
 
-Crysper is a secure and straightforward application for sharing encrypted, one-time secrets through a protected link that automatically expires. Once a secret is viewed or reaches its expiration time, it is permanently deleted. For added security, users can set an optional password.
+Cryptide is a secure and straightforward application for sharing encrypted, one-time secrets through a protected link that automatically expires. Once a secret is viewed or reaches its expiration time, it is permanently deleted. For added security, users can set an optional password.
 
 ## Table of Contents
 
@@ -64,8 +64,8 @@ Crysper is a secure and straightforward application for sharing encrypted, one-t
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/crysper.git
-   cd crysper
+   git clone https://github.com/your-username/cryptide.git
+   cd cryptide
    ```
 
 2. **Install PHP dependencies:**
@@ -102,7 +102,7 @@ Crysper is a secure and straightforward application for sharing encrypted, one-t
    DB_CONNECTION=pgsql
    DB_HOST=127.0.0.1
    DB_PORT=5432
-   DB_DATABASE=crysper
+   DB_DATABASE=cryptide
    DB_USERNAME=your_username
    DB_PASSWORD=your_password
    ```
@@ -171,7 +171,7 @@ npm run test
 ## Project Structure
 
 ```
-crysper/
+cryptide/
 ├── app/
 │   ├── Http/
 │   │   ├── Controllers/
@@ -236,4 +236,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-For any issues, please open an issue on GitHub. Thank you for using Crysper!
+For any issues, please open an issue on GitHub. Thank you for using Cryptide!
