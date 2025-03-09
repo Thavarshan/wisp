@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Toaster, useToast } from '@/components/ui/toast';
 import { Label } from '@/components/ui/label';
@@ -66,7 +66,7 @@ function handleRevealSecret() {
         <div class="w-full max-w-2xl">
             <Card class="shadow-xl">
                 <CardHeader>
-                    <CardTitle>Secure secret!</CardTitle>
+                    <img src="/images/logo.svg" alt="One Time Secrets" class="h-12 mx-auto" />
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <Alert v-if="revealed" variant="destructive">
@@ -78,7 +78,7 @@ function handleRevealSecret() {
                     </Alert>
                     <div v-if="!revealed && props.has_password">
                         <Label for="password" >Password</Label>
-                        <Input v-model="form.password" />
+                        <Input v-model="form.password" required />
                         <InputError v-if="form.errors.password" :error="form.errors.password" />
                     </div>
                     <SecretContentInput v-show="revealed" v-model="content" />

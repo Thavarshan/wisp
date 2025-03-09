@@ -58,32 +58,49 @@ watch(isEnabled, async (value) => {
 </script>
 
 <template>
-    <div class="flex items-center justify-between h-10">
-        <!-- Password Protect Toggle -->
-        <div class="flex items-center">
-            <Label class="flex items-center gap-3 cursor-pointer">
-                <Checkbox v-model:checked="isEnabled" />
-                Password protect
-            </Label>
+    <div class="pt-2 flex items-start justify-between h-16">
+        <div>
+            <!-- Password Protect Toggle -->
+            <div class="flex items-center">
+                <Label class="flex items-start gap-3 cursor-pointer">
+                    <Checkbox v-model:checked="isEnabled" />
+                    <div class="flex flex-col">
+                        <span>Password protect</span>
+                        <p class="mt-1 text-xs text-muted-foreground w-56">
+                            For extra security, you have the option to set a password.
+                        </p>
+                    </div>
+                </Label>
+            </div>
+
+            <div>
+
+            </div>
         </div>
 
-        <!-- Password Input and Copy Button (Shown only if enabled) -->
-        <div v-if="isEnabled" class="relative flex items-center">
-            <Input
-                v-model="passwordValue"
-                type="text"
-                placeholder="Enter password"
-                class="w-64 pr-10"
-            />
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                @click="handleCopy"
-                class="absolute right-0 mr-1"
-            >
-                <Copy class="size-4" />
-            </Button>
+        <div v-if="isEnabled">
+            <!-- Password Input and Copy Button (Shown only if enabled) -->
+            <div class="relative flex items-center">
+                <Input
+                    v-model="passwordValue"
+                    type="text"
+                    placeholder="Enter password"
+                    class="w-64 pr-10"
+                />
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    @click="handleCopy"
+                    class="absolute right-0 mr-1"
+                >
+                    <Copy class="size-4" />
+                </Button>
+            </div>
+
+            <div>
+
+            </div>
         </div>
     </div>
 </template>

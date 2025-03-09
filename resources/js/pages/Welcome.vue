@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Toaster, useToast } from '@/components/ui/toast';
 import { Head, useForm } from '@inertiajs/vue3';
@@ -11,7 +11,6 @@ import NameInput from '@/components/NameInput.vue';
 import ExpirationOptions from '@/components/ExpirationOptions.vue';
 import PasswordProtection from '@/components/PasswordProtection.vue';
 import { SecretsForm } from '@/types';
-import { getExpirationDate } from '@/lib/utils';
 
 // Initialize form with a default expiration of 5 minutes
 const form = useForm<SecretsForm>({
@@ -77,9 +76,9 @@ function handleSubmit() {
         <form @submit.prevent="handleSubmit" class="w-full max-w-2xl">
             <Card class="shadow-xl">
                 <CardHeader>
-                    <CardTitle>One Time Secrets</CardTitle>
-                    <CardDescription class="mt-2">
-                        <span class="text-accent-foreground">Share a confidential, one-time secret through a secure link that automatically expires.</span> The secret's content is permanently erased after a single view or when it reaches its expiration time. For extra security, you have the option to set a password.
+                    <img src="/images/logo.svg" alt="One Time Secrets" class="h-12 mx-auto" />
+                    <CardDescription class="mt-2 space-y-3 text-center">
+                        <p class="text-accent-foreground text-lg">Share a confidential, one-time secret through a secure link that automatically expires.</p>
                     </CardDescription>
                 </CardHeader>
                 <CardContent class="space-y-4">
@@ -93,7 +92,7 @@ function handleSubmit() {
                 </CardContent>
                 <CardFooter>
                     <Button type="submit" class="w-full" size="lg">
-                        <Lock class="size-4 mr-1" /> Store secret
+                        <Lock class="size-4 mr-1" /> Share secret
                     </Button>
                 </CardFooter>
             </Card>
