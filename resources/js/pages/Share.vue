@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppLogo from '@/components/AppLogo.vue';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -45,7 +46,7 @@ function handleDelete() {
     <Head title="Share Secret" />
     <div class="flex min-h-screen flex-col items-center lg:justify-center p-4 md:p-8 w-full">
         <div class="w-full max-w-xl text-center space-y-6">
-            <img src="/images/logo.svg" alt="One Time Secrets" class="h-12 mx-auto" />
+            <AppLogo href="/" classes="h-12 mx-auto" title="Cryptide" />
             <h1 class="text-3xl font-bold text-accent-foreground">Your secret is ready to be shared</h1>
             <p class="text-muted-foreground">Share the link below with the recipient. The secret will be obliterated after a single view or when it expires.</p>
             <div>

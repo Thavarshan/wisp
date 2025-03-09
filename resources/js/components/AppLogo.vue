@@ -4,12 +4,13 @@ import { Link } from '@inertiajs/vue3';
 defineProps<{
     href: string;
     title: string;
+    classes?: string;
 }>();
 </script>
 
 <template>
     <Link :href="href">
-        <svg class="text-black dark:text-white" viewBox="0 0 1846 448" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <svg :class="classes" class="text-black dark:text-white" viewBox="0 0 1846 448" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <title>{{ title }}</title>
             <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                 <g id="Group" transform="translate(0, 0)" fill="currentColor" fill-rule="nonzero">

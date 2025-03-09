@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppLogo from '@/components/AppLogo.vue';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Toaster, useToast } from '@/components/ui/toast';
@@ -66,7 +67,7 @@ function handleRevealSecret() {
         <div class="w-full max-w-2xl">
             <Card class="shadow-xl">
                 <CardHeader>
-                    <img src="/images/logo.svg" alt="One Time Secrets" class="h-12 mx-auto" />
+                    <AppLogo href="/" classes="h-12 mx-auto" title="Cryptide" />
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <Alert v-if="revealed" variant="destructive">
