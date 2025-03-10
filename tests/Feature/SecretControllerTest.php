@@ -39,7 +39,8 @@ class SecretControllerTest extends TestCase
                 ->where('secret', Crypt::decrypt($secret->content))
         );
 
-        $this->assertDatabaseMissing('secrets', ['uid' => $secret->uid]);
+        // Secret should still exist in the database until revealed
+        $this->assertDatabaseHas('secrets', ['uid' => $secret->uid]);
     }
 
     public function test_it_destroys_a_secret(): void
@@ -49,9 +50,9 @@ class SecretControllerTest extends TestCase
             'content' => Crypt::encrypt('This is a secret'),
         ]);
 
-        $response = $this->delete(route('secrets.destroy', $secret));
+        $response = $this->deleteJson(route('secrets.destroy', $secret));
 
-        $response->assertRedirect(route('home'));
+        $response->assertNoContent();  // Check for 204 No Content
         $this->assertDatabaseMissing('secrets', ['id' => $secret->id]);
     }
 
@@ -60,25 +61,24 @@ class SecretControllerTest extends TestCase
         $secret = Secret::create([
             'expired_at' => now()->addDay(),
             'content' => Crypt::encrypt('This is a secret'),
-            'password' => bcrypt('password123'),
+            'password' => 'password123', // is hashed during create event
         ]);
 
-        // Simulate entering the correct password
-        $response = $this->post(route('secrets.password', $secret), [
+        $response = $this->postJson(route('secrets.password', $secret), [
             'password' => 'password123',
         ]);
 
-        // Follow the redirect to the secret
-        $response = $this->get(route('secrets.show', $secret));
+        $response->assertNoContent();  // Expecting 204 No Content
 
+        $response = $this->get(route('secrets.show', $secret));
         $response->assertInertia(
             fn (Assert $page) => $page
                 ->component('Secret')
                 ->where('secret', Crypt::decrypt($secret->content))
         );
 
-        // Ensure the secret is deleted after being viewed
-        $this->assertDatabaseMissing('secrets', ['uid' => $secret->uid]);
+        // Secret should still exist until revealed
+        $this->assertDatabaseHas('secrets', ['uid' => $secret->uid]);
     }
 
     public function test_it_requires_correct_password_for_secret(): void
@@ -86,38 +86,36 @@ class SecretControllerTest extends TestCase
         $secret = Secret::create([
             'expired_at' => now()->addDay(),
             'content' => Crypt::encrypt('This is a secret'),
-            'password' => bcrypt('password123'),
+            'password' => 'password123',  // is hashed during create event
         ]);
 
-        // Attempt to access with an incorrect password
-        $response = $this->post(route('secrets.password', $secret), [
+        $response = $this->postJson(route('secrets.password', $secret), [
             'password' => 'wrongpassword',
         ]);
 
-        // Ensure the secret is still in the database
-        $this->assertDatabaseHas('secrets', ['uid' => $secret->uid]);
+        $response->assertStatus(422);  // Expecting 422 Unprocessable Entity
+        $response->assertJsonValidationErrors('password');  // Check for validation error
 
-        // Check for password error
-        $response->assertSessionHasErrors('password');
+        $this->assertDatabaseHas('secrets', ['uid' => $secret->uid]);
     }
 
-    public function test_it_deletes_secret_after_first_view(): void
+    public function test_it_deletes_secret_after_reveal(): void
     {
         $secret = Secret::create([
             'expired_at' => now()->addDay(),
             'content' => Crypt::encrypt('This is a one-time secret'),
         ]);
 
-        // View the secret
-        $this->get(route('secrets.show', $secret));
+        // Simulate revealing the secret by deleting it
+        $response = $this->deleteJson(route('secrets.destroy', $secret));
 
-        // Ensure the secret is deleted after viewing
+        $response->assertNoContent();  // Expecting 204 No Content
+
+        // Ensure the secret is deleted after being revealed
         $this->assertDatabaseMissing('secrets', ['uid' => $secret->uid]);
 
         // Try to view the secret again
         $response = $this->get(route('secrets.show', $secret));
-
-        // Ensure a 404 response
-        $response->assertNotFound();
+        $response->assertNotFound();  // Expecting 404 Not Found
     }
 }
