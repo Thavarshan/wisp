@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreSecretRequest;
 use App\Models\Secret;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Crypt;
@@ -39,24 +40,24 @@ class SecretController extends Controller implements HasMiddleware
      */
     public function show(Secret $secret): InertiaResponse|Response
     {
-        $hasPassword = $secret->hasPassword();
-
-        if (! $hasPassword) {
-            $secret->delete();
-        }
-
         return Inertia::render('Secret', [
             'secret' => Crypt::decrypt($secret->content),
-            'has_password' => $hasPassword,
+            'has_password' => $secret->hasPassword(),
         ]);
     }
 
     /**
      * Destroy the specified secret.
      */
-    public function destroy(Secret $secret): RedirectResponse
-    {
+    public function destroy(
+        Request $request,
+        Secret $secret
+    ): RedirectResponse|Response {
         $secret->delete();
+
+        if ($request->wantsJson()) {
+            return response()->noContent();
+        }
 
         return redirect()->route('home');
     }

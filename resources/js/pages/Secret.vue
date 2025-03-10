@@ -12,6 +12,8 @@ import { AlertCircle, Copy, Eye } from 'lucide-vue-next';
 import copy from 'copy-to-clipboard';
 import SecretContentInput from '@/components/SecretContentInput.vue';
 import InputError from '@/components/InputError.vue';
+import axios from 'axios';
+import { getUidFromRoute } from '@/lib/utils';
 
 const revealed = ref(false);
 
@@ -21,7 +23,9 @@ const props = defineProps<{
     has_password: boolean;
 }>();
 
-const form = useForm({
+const form = useForm<{
+    password: string;
+}>({
     password: '',
 });
 
@@ -41,22 +45,35 @@ function handleCopy() {
     });
 }
 
-function getUidFromRoute() {
-    return window.location.pathname.split('/').pop();
-}
+const uid = getUidFromRoute();
 
 function handleRevealSecret() {
     if (props.has_password) {
-        form.post(route('secrets.password', { secret: getUidFromRoute() }), {
+        // Attempt to validate the password first
+        form.post(route('secrets.password', { secret: uid }), {
+            preserveState: true,
             onSuccess: () => {
-                revealed.value = true;
+                obliterateSecret(() => revealed.value = true);
             },
         });
 
         return;
     }
 
-    revealed.value = true;
+    obliterateSecret(() => revealed.value = true);
+}
+
+function obliterateSecret(callback?: () => void): void {  // Made callback optional
+    axios.delete(route('secrets.destroy', { secret: uid }))
+        .then(() => {
+            if (callback) callback();  // Only call if callback is provided
+        })
+        .catch(() => {
+            toast({
+                title: 'Unable to reveal secret',
+                description: 'An error occurred while trying to reveal the secret.',
+            });
+        });
 }
 </script>
 

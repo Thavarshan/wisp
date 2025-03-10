@@ -54,3 +54,7 @@ export function extractSecretUid(url: string): string | null {
         return null;
     }
 }
+
+export function getUidFromRoute(): string | undefined {
+    return window.location.pathname.split('/').pop();
+}

@@ -35,7 +35,17 @@ export interface User {
     updated_at: string;
 }
 
-export interface SecretsForm {
+export interface Secret {
+    id: number;
+    user_id: number;
+    name?: string;
+    content: string;
+    expired_at: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface SecretsForm extends Partial<Secret> {
     name: string;
     content: string;
     expired_at: '5 mins' | '10 mins' | '30 mins' | '1 hour' | '6 hours' | '12 hours' | '1 day';

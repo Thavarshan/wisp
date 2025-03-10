@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class SecretPasswordRequest extends FormRequest
 {
@@ -33,7 +34,9 @@ class SecretPasswordRequest extends FormRequest
     public function validatePassword(string $password): void
     {
         if (! Hash::check($this->password, $password)) {
-            $this->validator->errors()->add('password', 'The provided password is incorrect.');
+            throw ValidationException::withMessages([
+                'password' => __('The provided password is incorrect.'),
+            ]);
         }
     }
 }
