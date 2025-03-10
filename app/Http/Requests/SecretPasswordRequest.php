@@ -2,9 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidateSecretPasswordRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class SecretPasswordRequest extends FormRequest
 {
@@ -24,19 +23,11 @@ class SecretPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'password' => ['required', 'string'],
+            'password' => [
+                'required',
+                'string',
+                new ValidateSecretPasswordRule($this->route('secret')),
+            ],
         ];
-    }
-
-    /**
-     * Validate the secret password.
-     */
-    public function validatePassword(string $password): void
-    {
-        if (! Hash::check($this->password, $password)) {
-            throw ValidationException::withMessages([
-                'password' => __('The provided password is incorrect.'),
-            ]);
-        }
     }
 }

@@ -51,10 +51,10 @@ function handleRevealSecret() {
     if (props.has_password) {
         // Attempt to validate the password first
         form.post(route('secrets.password', { secret: uid }), {
-            preserveState: true,
+            preserveScroll: true,
             onSuccess: () => {
                 obliterateSecret(() => revealed.value = true);
-            },
+            }
         });
 
         return;
@@ -96,8 +96,15 @@ function obliterateSecret(callback?: () => void): void {  // Made callback optio
                     </Alert>
                     <div v-if="!revealed && props.has_password">
                         <Label for="password" >Password</Label>
-                        <Input v-model="form.password" required />
-                        <InputError v-if="form.errors.password" :error="form.errors.password" />
+                        <Input
+                            id="password"
+                            type="password"
+                            required
+                            :tabindex="2"
+                            v-model="form.password"
+                            placeholder="Password"
+                        />
+                        <InputError :message="form.errors.password" />
                     </div>
                     <SecretContentInput v-show="revealed" v-model="content" />
                 </CardContent>
