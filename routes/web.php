@@ -12,11 +12,14 @@ Route::get('/', function () {
 
 Route::resource('secrets', SecretController::class)
     ->only(['store', 'show']);
+
 Route::delete('secrets/{secret}/destroy', [SecretController::class, 'destroy'])
     ->name('secrets.destroy');
+
 Route::get('share', ShareSecretController::class)
     ->middleware('secure.secret')
     ->name('secrets.share');
+
 Route::post('secrets/{secret}/password', ValidateSecretPasswordController::class)
     ->middleware('secure.secret')
     ->name('secrets.password');
