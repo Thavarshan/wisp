@@ -2,11 +2,12 @@
 import AppLogo from '@/components/AppLogo.vue';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Toaster, useToast } from '@/components/ui/toast';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Head, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { Head, useForm, router } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Copy, Eye } from 'lucide-vue-next';
 import copy from 'copy-to-clipboard';
@@ -14,42 +15,100 @@ import SecretContentInput from '@/components/SecretContentInput.vue';
 import InputError from '@/components/InputError.vue';
 import axios from 'axios';
 import { getUidFromRoute } from '@/lib/utils';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import duration from 'dayjs/plugin/duration';
+import dayjs from 'dayjs';
+
+dayjs.extend(relativeTime);
+dayjs.extend(duration);
 
 const revealed = ref(false);
+const expirationTimeout = ref<number | null>(null);
+const countdown = ref(''); // Stores the formatted countdown
+const intervalId = ref<number | undefined>(undefined); // Interval for real-time clock
 
-// Initialize form with a default expiration of 5 minutes
 const props = defineProps<{
     secret: string;
     has_password: boolean;
+    expired_at: string;
 }>();
 
-const form = useForm<{
-    password: string;
-}>({
-    password: '',
-});
-
-const { toast } = useToast();
-
-// Computed properties for two-way binding
+const expirationTime = computed(() => dayjs(props.expired_at));
 const content = computed({
-    get: () => props.secret,
+    get: () => (revealed.value ? props.secret : ''),
     set: () => ''
 });
 
+// Function to update the countdown clock every second
+function updateCountdown() {
+    const now = dayjs();
+    const timeLeft = expirationTime.value.diff(now);
+
+    if (timeLeft <= 0) {
+        countdown.value = 'Expired';
+        clearInterval(intervalId.value); // Stop the timer
+        checkExpiration();
+    } else {
+        const durationLeft = dayjs.duration(timeLeft);
+        countdown.value = `${durationLeft.minutes()}m ${durationLeft.seconds()}s`;
+    }
+}
+
+// Function to check if the secret has expired and refresh the page
+function checkExpiration() {
+    if (expirationTime.value.isBefore(dayjs())) {
+        window.location.reload(); // Use Inertia's router.reload() instead of full page reload
+    }
+}
+
+// Watch for changes in expired_at and refresh when expired
+watch(expirationTime, (newExpirationTime) => {
+    if (expirationTimeout.value) {
+        clearTimeout(expirationTimeout.value);
+    }
+
+    const now = dayjs();
+    const timeLeft = newExpirationTime.diff(now);
+
+    if (timeLeft <= 0) {
+        checkExpiration();
+    } else {
+        expirationTimeout.value = setTimeout(checkExpiration, timeLeft);
+    }
+}, { immediate: true });
+
+// Start the countdown timer when mounted
+onMounted(() => {
+    updateCountdown();
+    intervalId.value = setInterval(updateCountdown, 1000);
+});
+
+// Cleanup intervals and timeouts when component is unmounted
+onUnmounted(() => {
+    if (intervalId.value) {
+        clearInterval(intervalId.value);
+    }
+    if (expirationTimeout.value) {
+        clearTimeout(expirationTimeout.value);
+    }
+});
+
+const { toast } = useToast();
+const form = useForm<{ password: string; }>({ password: '' });
+const uid = getUidFromRoute();
+
+// Function to copy secret to clipboard
 function handleCopy() {
-    copy(content.value);
+    copy(props.secret);
     toast({
         title: 'Secret copied',
         description: 'The secret has been copied to your clipboard.',
     });
 }
 
-const uid = getUidFromRoute();
-
+// Function to reveal the secret
 function handleRevealSecret() {
     if (props.has_password) {
-        // Attempt to validate the password first
         form.post(route('secrets.password', { secret: uid }), {
             preserveScroll: true,
             onSuccess: () => {
@@ -63,10 +122,11 @@ function handleRevealSecret() {
     obliterateSecret(() => revealed.value = true);
 }
 
-function obliterateSecret(callback?: () => void): void {  // Made callback optional
+// Function to delete the secret after revealing
+function obliterateSecret(callback?: () => void): void {
     axios.delete(route('secrets.destroy', { secret: uid }))
         .then(() => {
-            if (callback) callback();  // Only call if callback is provided
+            if (callback) callback();
         })
         .catch(() => {
             toast({
@@ -87,6 +147,11 @@ function obliterateSecret(callback?: () => void): void {  // Made callback optio
                     <AppLogo href="/" classes="h-12 mx-auto" title="Cryptide" />
                 </CardHeader>
                 <CardContent class="space-y-4">
+                    <div class="flex items-center justify-center">
+                        <Badge>
+                            Expires in {{ countdown }}
+                        </Badge>
+                    </div>
                     <Alert v-if="revealed" variant="destructive">
                         <AlertCircle class="w-4 h-4" />
                         <AlertTitle>This secret has been obliterated.</AlertTitle>
@@ -95,7 +160,7 @@ function obliterateSecret(callback?: () => void): void {  // Made callback optio
                         </AlertDescription>
                     </Alert>
                     <div v-if="!revealed && props.has_password">
-                        <Label for="password" >Password</Label>
+                        <Label for="password">Password</Label>
                         <Input
                             id="password"
                             type="password"

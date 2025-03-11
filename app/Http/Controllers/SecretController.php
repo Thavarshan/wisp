@@ -43,6 +43,7 @@ class SecretController extends Controller implements HasMiddleware
         return Inertia::render('Secret', [
             'secret' => Crypt::decrypt($secret->content),
             'has_password' => $secret->hasPassword(),
+            'expired_at' => $secret->expired_at,
         ]);
     }
 
