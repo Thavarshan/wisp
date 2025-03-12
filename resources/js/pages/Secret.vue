@@ -144,8 +144,11 @@ onUnmounted(() => {
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <div class="flex items-center justify-center">
-                        <Badge>
+                        <Badge v-if="countdown !== 'Expired'">
                             Expires in {{ countdown }}
+                        </Badge>
+                        <Badge v-else variant="destructive">
+                            Secret has expired
                         </Badge>
                     </div>
                     <Alert v-if="revealed" variant="destructive">
