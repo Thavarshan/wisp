@@ -97,7 +97,7 @@ function obliterateSecret(callback?: () => void): void {
         .catch((error) => {
             toast({
                 title: 'Unable to reveal secret',
-                description: 'An error occurred while trying to reveal the secret.',
+                description: 'An error occurred while trying to reveal the secret: ' + error.message,
             });
         });
 }
