@@ -1,31 +1,23 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import duration from 'dayjs/plugin/duration';
+import copy from 'copy-to-clipboard';
+import { Toaster, useToast } from '@/components/ui/toast';
+import { getUidFromRoute } from '@/lib/utils';
 import AppLogo from '@/components/AppLogo.vue';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Toaster, useToast } from '@/components/ui/toast';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Head, useForm, router } from '@inertiajs/vue3';
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Copy, Eye } from 'lucide-vue-next';
-import copy from 'copy-to-clipboard';
 import SecretContentInput from '@/components/SecretContentInput.vue';
 import InputError from '@/components/InputError.vue';
-import axios from 'axios';
-import { getUidFromRoute } from '@/lib/utils';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import duration from 'dayjs/plugin/duration';
-import dayjs from 'dayjs';
-
-dayjs.extend(relativeTime);
-dayjs.extend(duration);
-
-const revealed = ref(false);
-const expirationTimeout = ref<number | null>(null);
-const countdown = ref(''); // Stores the formatted countdown
-const intervalId = ref<number | undefined>(undefined); // Interval for real-time clock
 
 const props = defineProps<{
     secret: string;
@@ -33,10 +25,21 @@ const props = defineProps<{
     expired_at: string;
 }>();
 
+const revealed = ref(false);
+const expirationTimeout = ref<number | null>(null);
+const countdown = ref('');
+const intervalId = ref<number | undefined>(undefined);
+const { toast } = useToast();
+const form = useForm<{ password: string; }>({ password: '' });
+const uid = getUidFromRoute();
+
+dayjs.extend(relativeTime);
+dayjs.extend(duration);
+
 const expirationTime = computed(() => dayjs(props.expired_at));
 const content = computed({
     get: () => (revealed.value ? props.secret : ''),
-    set: () => ''
+    set: () => '' // Read-only
 });
 
 // Function to update the countdown clock every second
@@ -46,7 +49,7 @@ function updateCountdown() {
 
     if (timeLeft <= 0) {
         countdown.value = 'Expired';
-        clearInterval(intervalId.value); // Stop the timer
+        clearInterval(intervalId.value);
         checkExpiration();
     } else {
         const durationLeft = dayjs.duration(timeLeft);
@@ -57,45 +60,9 @@ function updateCountdown() {
 // Function to check if the secret has expired and refresh the page
 function checkExpiration() {
     if (expirationTime.value.isBefore(dayjs())) {
-        window.location.reload(); // Use Inertia's router.reload() instead of full page reload
+        window.location.reload();
     }
 }
-
-// Watch for changes in expired_at and refresh when expired
-watch(expirationTime, (newExpirationTime) => {
-    if (expirationTimeout.value) {
-        clearTimeout(expirationTimeout.value);
-    }
-
-    const now = dayjs();
-    const timeLeft = newExpirationTime.diff(now);
-
-    if (timeLeft <= 0) {
-        checkExpiration();
-    } else {
-        expirationTimeout.value = setTimeout(checkExpiration, timeLeft);
-    }
-}, { immediate: true });
-
-// Start the countdown timer when mounted
-onMounted(() => {
-    updateCountdown();
-    intervalId.value = setInterval(updateCountdown, 1000);
-});
-
-// Cleanup intervals and timeouts when component is unmounted
-onUnmounted(() => {
-    if (intervalId.value) {
-        clearInterval(intervalId.value);
-    }
-    if (expirationTimeout.value) {
-        clearTimeout(expirationTimeout.value);
-    }
-});
-
-const { toast } = useToast();
-const form = useForm<{ password: string; }>({ password: '' });
-const uid = getUidFromRoute();
 
 // Function to copy secret to clipboard
 function handleCopy() {
@@ -115,7 +82,6 @@ function handleRevealSecret() {
                 obliterateSecret(() => revealed.value = true);
             }
         });
-
         return;
     }
 
@@ -128,13 +94,43 @@ function obliterateSecret(callback?: () => void): void {
         .then(() => {
             if (callback) callback();
         })
-        .catch(() => {
+        .catch((error) => {
             toast({
                 title: 'Unable to reveal secret',
                 description: 'An error occurred while trying to reveal the secret.',
             });
         });
 }
+
+// Watch for changes in expired_at and refresh when expired
+watch(expirationTime, (newExpirationTime) => {
+    if (expirationTimeout.value) {
+        clearTimeout(expirationTimeout.value);
+    }
+
+    const now = dayjs();
+    const timeLeft = newExpirationTime.diff(now);
+
+    if (timeLeft <= 0) {
+        checkExpiration();
+    } else {
+        expirationTimeout.value = setTimeout(checkExpiration, timeLeft);
+    }
+}, { immediate: true });
+
+onMounted(() => {
+    updateCountdown();
+    intervalId.value = setInterval(updateCountdown, 1000);
+});
+
+onUnmounted(() => {
+    if (intervalId.value) {
+        clearInterval(intervalId.value);
+    }
+    if (expirationTimeout.value) {
+        clearTimeout(expirationTimeout.value);
+    }
+});
 </script>
 
 <template>
@@ -174,10 +170,23 @@ function obliterateSecret(callback?: () => void): void {
                     <SecretContentInput v-show="revealed" v-model="content" />
                 </CardContent>
                 <CardFooter>
-                    <Button v-if="!revealed" type="button" @click="handleRevealSecret" class="w-full" size="lg">
+                    <Button
+                        v-if="!revealed"
+                        type="button"
+                        @click="handleRevealSecret"
+                        class="w-full"
+                        size="lg"
+                        :disabled="props.has_password && !form.password"
+                    >
                         <Eye class="size-4 mr-1" /> Reveal secret
                     </Button>
-                    <Button v-else type="button" @click="handleCopy" class="w-full" size="lg">
+                    <Button
+                        v-else
+                        type="button"
+                        @click="handleCopy"
+                        class="w-full"
+                        size="lg"
+                    >
                         <Copy class="size-4 mr-1" /> Copy secret
                     </Button>
                 </CardFooter>
