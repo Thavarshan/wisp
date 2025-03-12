@@ -48,7 +48,7 @@ export interface Secret {
 export interface SecretsForm extends Partial<Secret> {
     name: string;
     content: string;
-    expired_at: '5 mins' | '10 mins' | '30 mins' | '1 hour' | '6 hours' | '12 hours' | '1 day';
+    expired_at: '5m' | '10m' | '30m' | '1h' | '6h' | '12h' | '1d';
     password?: string;
     password_protect: boolean;
     [key: string]: string | boolean | undefined;

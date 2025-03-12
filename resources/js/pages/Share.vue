@@ -56,29 +56,13 @@ function handleDelete() {
             </div>
 
             <div class="relative flex items-center justify-center">
-                <Input
-                    type="text"
-                    v-model="shareLink"
-                    readonly
-                />
-                <Button
-                    type="button"
-                    size="icon"
-                    class="absolute right-0 mr-px"
-                    @click="handleCopy"
-                >
+                <Input type="text" v-model="shareLink" readonly />
+                <Button type="button" size="icon" class="absolute right-0 mr-px"  @click="handleCopy">
                     <Copy class="size-4" />
                 </Button>
             </div>
 
-            <Button
-                type="button"
-                variant="destructive"
-                size="lg"
-                class="w-full"
-                @click="handleDelete"
-                :disabled="isDeleted"
-            >
+            <Button type="button" variant="destructive" size="lg" class="w-full" @click="handleDelete" :disabled="isDeleted">
                 <Bomb class="size-4" />
                 {{ isDeleted ? 'Secret Obliterated' : 'Obliterate secret' }}
             </Button>
