@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,6 +41,8 @@ class SecretController extends Controller implements HasMiddleware
      */
     public function show(Secret $secret): InertiaResponse|Response
     {
+        Gate::authorize('view', $secret);
+
         return Inertia::render('Secret', [
             'secret' => Crypt::decrypt($secret->content),
             'has_password' => $secret->hasPassword(),
@@ -54,6 +57,8 @@ class SecretController extends Controller implements HasMiddleware
         Request $request,
         Secret $secret
     ): RedirectResponse|Response {
+        Gate::authorize('delete', $secret);
+        
         $secret->delete();
 
         if ($request->wantsJson()) {

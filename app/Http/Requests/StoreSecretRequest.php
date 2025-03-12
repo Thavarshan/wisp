@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\ExpirationOption;
+use App\Models\Secret;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class StoreSecretRequest extends FormRequest
@@ -13,7 +15,7 @@ class StoreSecretRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return Gate::allows('create', Secret::class);
     }
 
     /**

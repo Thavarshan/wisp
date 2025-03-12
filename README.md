@@ -22,8 +22,6 @@ Cryptide is a secure and straightforward application for sharing encrypted, one-
 - [Contributing](#contributing)
 - [License](#license)
 
----
-
 ## Features
 
 - Share encrypted, one-time secrets via secure links.
@@ -33,8 +31,6 @@ Cryptide is a secure and straightforward application for sharing encrypted, one-
 - User-friendly interface for creating and accessing secrets.
 - Secure handling of passwords using hashing and encryption.
 - Destruction of secrets upon viewing or manual obliteration.
-
----
 
 ## Technologies Used
 
@@ -46,8 +42,6 @@ Cryptide is a secure and straightforward application for sharing encrypted, one-
 - **Hosting:** Heroku
 - **JavaScript Runtime:** NodeJS v22
 
----
-
 ## Requirements
 
 - PHP 8.4 or higher
@@ -56,8 +50,6 @@ Cryptide is a secure and straightforward application for sharing encrypted, one-
 - PostgreSQL
 - OpenSSL for encryption
 - Nginx or Apache server
-
----
 
 ## Installation
 
@@ -85,8 +77,6 @@ Cryptide is a secure and straightforward application for sharing encrypted, one-
    ```bash
    npm run build
    ```
-
----
 
 ## Configuration
 
@@ -120,8 +110,6 @@ Cryptide is a secure and straightforward application for sharing encrypted, one-
    APP_CIPHER=AES-256-CBC
    ```
 
----
-
 ## Database Migrations
 
 Run the following command to create database tables:
@@ -129,8 +117,6 @@ Run the following command to create database tables:
 ```bash
 php artisan migrate
 ```
-
----
 
 ## Usage
 
@@ -150,8 +136,6 @@ php artisan migrate
 2. Enter the password if the secret is password-protected.
 3. The secret will be destroyed upon viewing.
 
----
-
 ## Testing
 
 ### Run Feature Tests
@@ -165,8 +149,6 @@ php artisan test
 ```bash
 npm run test
 ```
-
----
 
 ## Project Structure
 
@@ -194,16 +176,12 @@ cryptide/
 └── README.md
 ```
 
----
-
 ## Security Considerations
 
 - **Encryption:** Secrets are encrypted using Laravel's AES-256-CBC encryption.
 - **Password Protection:** Passwords are hashed using Bcrypt.
 - **HTTPS:** Ensure HTTPS is enabled for secure communication.
 - **Auto-deletion:** Secrets are automatically deleted after viewing or expiration.
-
----
 
 ## Contributing
 
@@ -228,12 +206,8 @@ cryptide/
 
 5. Create a Pull Request.
 
----
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 For any issues, please open an issue on GitHub. Thank you for using Cryptide!
