@@ -17,10 +17,12 @@ class BelongsToOrganisationRelatedRoles implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        if (Organisation::checkCurrent()) {
-            $builder->whereHas('roles', function (Builder $query) {
-                $query->where('organisation_id', Organisation::current()->id);
-            });
+        if (! Organisation::checkCurrent()) {
+            return;
         }
+
+        $builder->whereHas('roles', function (Builder $query) {
+            $query->where('organisation_id', Organisation::current()->id);
+        });
     }
 }

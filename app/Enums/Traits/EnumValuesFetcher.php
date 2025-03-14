@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits;
+namespace App\Enums\Traits;
 
 use Illuminate\Support\Collection;
 

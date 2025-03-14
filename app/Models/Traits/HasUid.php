@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits;
+namespace App\Models\Traits;
 
 use App\Enums\App;
 use App\Support\HashId;

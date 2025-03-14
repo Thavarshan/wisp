@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-use App\Traits\EnumValuesFetcher;
+use App\Enums\Traits\EnumValuesFetcher;
 
 enum Role: string
 {
