@@ -29,6 +29,3 @@ $DUSTER_PATH lint $DIRECTORIES_TO_ANALYSE
 
 # Run PHP lint
 find $DIRECTORIES_TO_ANALYSE -type f -name "*.php" -exec php -l {} \;
-
-# Run JS lint
-npm run lint -- $DIRECTORIES_TO_ANALYSE

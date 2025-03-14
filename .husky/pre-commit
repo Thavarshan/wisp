@@ -8,4 +8,4 @@ composer fix
 composer lint
 
 # Run Laravel tests
-php artisan test --parallel
+./vendor/bin/sail artisan test
