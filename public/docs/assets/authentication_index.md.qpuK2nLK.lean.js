@@ -1,0 +1,1 @@
+import{_ as t,c as e,o as a}from"./chunks/framework.BAjNsQ49.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"authentication/index.md","filePath":"authentication/index.md"}'),n={name:"authentication/index.md"};function i(o,c,r,s,d,p){return a(),e("div")}const f=t(n,[["render",i]]);export{m as __pageData,f as default};

@@ -1,36 +1,64 @@
 {
-    "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/vue-starter-kit",
+    "name": "cerberus-iam/cerberus",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Simple IAM service API",
     "keywords": [
-        "laravel",
-        "framework"
+        "cerberus",
+        "api",
+        "iam",
+        "auth",
+        "passport",
+        "vite"
     ],
-    "license": "MIT",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Jerome Thayananthajothy",
+            "email": "tjthavarshan@gmail.com"
+        }
+    ],
+    "repository": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/cerberus-iam/cerberus"
+        }
+    ],
     "require": {
-        "php": "^8.2",
-        "inertiajs/inertia-laravel": "^2.0",
+        "php": "^8.3",
+        "hashids/hashids": "^5.0",
+        "jerome/fetch-php": "^2.0",
+        "jerome/filterable": "^1.2",
+        "laravel/cashier": "^15.6",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1",
+        "laravel/passport": "^12.0",
+        "laravel/tinker": "^2.10",
+        "lcobucci/jwt": "^5.5",
+        "spatie/laravel-medialibrary": "^11.12",
+        "spatie/laravel-multitenancy": "^4.0",
+        "spatie/laravel-sluggable": "^3.7",
+        "inertiajs/inertia-laravel": "^2.0",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.23",
-        "laravel/pail": "^1.2.2",
+        "fakerphp/faker": "^1.24",
+        "laravel/pail": "^1.2",
         "laravel/pint": "^1.21",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^11.5.3",
+        "phpunit/phpunit": "^11.5",
         "tightenco/duster": "^3.1"
     },
     "autoload": {
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
-        }
+            "Database\\Seeders\\": "database/seeders/",
+            "Database\\Traits\\": "database/traits/"
+        },
+        "files": [
+            "app/Support/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
