@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Models\Scopes\BelongsToOrganisation;
-use App\Traits\HasOrganisationRelationship;
-use App\Traits\HasUid;
+use App\Models\Traits\HasOrganisationRelationship;
+use App\Models\Traits\HasUid;
 use Filterable\Interfaces\Filterable;
 use Filterable\Traits\Filterable as HasFilters;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;

@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Enums\DefaultData;
+use App\Models\Traits\HasApiAccess;
+use App\Models\Traits\HasUid;
 use App\Observers\OrganisationObserver;
-use App\Traits\HasApiAccess;
-use App\Traits\HasUid;
 use Filterable\Interfaces\Filterable;
 use Filterable\Traits\Filterable as HasFilters;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -40,6 +40,16 @@ class Organisation extends Model implements Filterable, IsTenant
     ];
 
     /**
+     * Get the default organisation.
+     */
+    public static function getDefault(): static
+    {
+        return static::firstOrCreate([
+            'name' => DefaultData::ORGANISATION->value,
+        ]);
+    }
+
+    /**
      * Get the options for generating the slug.
      */
     public function getSlugOptions(): SlugOptions
@@ -71,16 +81,6 @@ class Organisation extends Model implements Filterable, IsTenant
     public function teams(): HasMany
     {
         return $this->hasMany(Team::class);
-    }
-
-    /**
-     * Get the default organisation.
-     */
-    public static function getDefault(): static
-    {
-        return static::firstOrCreate([
-            'name' => DefaultData::ORGANISATION->value,
-        ]);
     }
 
     /**

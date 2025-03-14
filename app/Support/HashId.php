@@ -8,16 +8,16 @@ use Hashids\HashidsInterface;
 class HashId
 {
     /**
-     * Default UID character length.
-     */
-    public const CHARACTER_LENGTH = 7;
-
-    /**
      * String of acceptable characters.
      *
      * @var string
      */
     protected static $characterPool = 'ABCDEFGHJKLMNOPQRSTUVWXYZ23456789';
+
+    /**
+     * Default UID character length.
+     */
+    public const CHARACTER_LENGTH = 7;
 
     /**
      * Generate a new and unique code.

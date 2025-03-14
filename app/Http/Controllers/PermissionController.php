@@ -45,8 +45,6 @@ class PermissionController extends Controller
     {
         Gate::authorize(PermissionEnum::VIEW->value, $permission);
 
-        $permission->load('permissions');
-
         return response()->json(new PermissionResource($permission));
     }
 

@@ -23,6 +23,7 @@ class OrganisationController extends Controller
         Gate::authorize(Permission::VIEW_ANY->value, Organisation::class);
 
         $organisations = Organisation::filter($filter)
+            ->with(['users', 'teams'])
             ->latest()
             ->paginate($request->per_page ?? 10);
 

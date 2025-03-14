@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Models\Scopes\BelongsToOrganisation;
+use App\Models\Traits\HasOrganisationRelationship;
+use App\Models\Traits\HasRoles;
+use App\Models\Traits\HasTeams;
+use App\Models\Traits\HasUid;
 use App\Observers\UserObserver;
-use App\Traits\HasOrganisationRelationship;
-use App\Traits\HasRoles;
-use App\Traits\HasTeams;
-use App\Traits\HasUid;
 use Filterable\Interfaces\Filterable;
 use Filterable\Traits\Filterable as HasFilters;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -66,18 +66,23 @@ class User extends Authenticatable implements Filterable, MustVerifyEmail
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Determine if the user is associated with the given organisation or team.
      */
-    protected function casts(): array
-    {
-        return [
-            'date_of_birth' => 'datetime',
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'meta' => 'array',
-        ];
+    public static function createFromInvitation(
+        Invitation $invitation,
+        array $data
+    ): static {
+        $user = static::create(array_merge($data, [
+            'email' => $invitation->email,
+            'organisation_id' => $invitation->organisation_id,
+            'email_verified_at' => now(),
+        ]));
+
+        $user->assignRole($invitation->role);
+
+        $invitation->delete();
+
+        return $user;
     }
 
     /**
@@ -107,23 +112,18 @@ class User extends Authenticatable implements Filterable, MustVerifyEmail
     }
 
     /**
-     * Determine if the user is associated with the given organisation or team.
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
      */
-    public static function createFromInvitation(
-        Invitation $invitation,
-        array $data
-    ): static {
-        $user = static::create(array_merge($data, [
-            'email' => $invitation->email,
-            'organisation_id' => $invitation->organisation_id,
-            'email_verified_at' => now(),
-        ]));
-
-        $user->assignRole($invitation->role);
-
-        $invitation->delete();
-
-        return $user;
+    protected function casts(): array
+    {
+        return [
+            'date_of_birth' => 'datetime',
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'meta' => 'array',
+        ];
     }
 
     /**

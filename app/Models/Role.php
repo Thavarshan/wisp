@@ -4,9 +4,9 @@ namespace App\Models;
 
 use App\Enums\Role as RoleType;
 use App\Models\Scopes\BelongsToOrganisation;
+use App\Models\Traits\HasOrganisationRelationship;
+use App\Models\Traits\HasPermissions;
 use App\Observers\RoleObserver;
-use App\Traits\HasOrganisationRelationship;
-use App\Traits\HasPermissions;
 use Filterable\Interfaces\Filterable;
 use Filterable\Traits\Filterable as HasFilters;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -35,19 +35,19 @@ class Role extends Model implements Filterable
     ];
 
     /**
-     * Get all users with this role assigned.
-     */
-    public function users(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class);
-    }
-
-    /**
      * Find role by name.
      */
     public static function findByName(string $role): static
     {
         return static::whereName($role)->firstOrFail();
+    }
+
+    /**
+     * Get all users with this role assigned.
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class);
     }
 
     /**

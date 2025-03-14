@@ -49,9 +49,10 @@ class CreateRoleTest extends TestCase
 
     public function test_store_as_non_admin(): void
     {
-        $this->actor->assignRole(
-            Role::create(['name' => 'unknown'])
-        );
+        $this->actor->assignRole(Role::create([
+            'name' => 'unknown',
+            'organisation_id' => $this->actor->organisation_id,
+        ]));
 
         $this->signIn($this->actor);
 

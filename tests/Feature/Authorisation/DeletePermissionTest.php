@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Authorisation;
 
-use App\Enums\Role as RoleEnum;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,19 +16,12 @@ class DeletePermissionTest extends TestCase
 
     public function test_destroy(): void
     {
-        $this->withoutExceptionHandling();
-        $this->actor->assignRole(
-            $role = Role::firstOrCreate([
-                'name' => RoleEnum::ADMIN->value,
-                'guard_name' => 'api',
-            ])
-        );
+        $this->actor->assignRole($role = Role::admin());
 
         $this->signIn($this->actor);
 
         $permission = Permission::create([
             'name' => fake()->word,
-            'guard_name' => 'api',
         ]);
         $role->givePermissionTo($permission);
 
@@ -40,18 +32,15 @@ class DeletePermissionTest extends TestCase
 
     public function test_destroy_as_non_admin(): void
     {
-        $this->actor->assignRole(
-            $role = Role::create([
-                'name' => 'unknown',
-                'guard_name' => 'api',
-            ])
-        );
+        $this->actor->assignRole($role = Role::create([
+            'name' => 'unknown',
+            'organisation_id' => $this->actor->organisation_id,
+        ]));
 
         $this->signIn($this->actor);
 
         $permission = Permission::create([
             'name' => fake()->word,
-            'guard_name' => 'api',
         ]);
         $role->givePermissionTo($permission);
 

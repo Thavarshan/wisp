@@ -3,10 +3,10 @@
 namespace Tests\Feature\Authorisation;
 
 use App\Enums\Role as RoleEnum;
+use App\Models\Permission;
+use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Group;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 #[Group('Authorisation')]
@@ -56,9 +56,10 @@ class FetchPermissionsTest extends TestCase
 
     public function test_index_as_non_admin(): void
     {
-        $this->actor->assignRole(
-            Role::create(['name' => 'unknown'])
-        );
+        $this->actor->assignRole(Role::create([
+            'name' => 'unknown',
+            'organisation_id' => $this->actor->organisation_id,
+        ]));
 
         $this->signIn($this->actor);
 

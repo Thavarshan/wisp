@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Authorisation;
 
-use App\Enums\Role as RoleEnum;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
@@ -13,13 +13,11 @@ use Tests\TestCase;
 #[Group('Authorisation')]
 class UpdatePermissionTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
     public function test_update(): void
     {
-        $this->actor->assignRole(
-            $role = Role::create(['name' => RoleEnum::ADMIN])
-        );
+        $this->actor->assignRole($role = Role::admin());
 
         $this->signIn($this->actor);
 
@@ -40,9 +38,7 @@ class UpdatePermissionTest extends TestCase
 
     public function test_update_with_missing_fields(): void
     {
-        $this->actor->assignRole(
-            $role = Role::create(['name' => RoleEnum::ADMIN])
-        );
+        $this->actor->assignRole($role = Role::admin());
 
         $this->signIn($this->actor);
 
@@ -62,7 +58,10 @@ class UpdatePermissionTest extends TestCase
     public function test_update_as_non_admin(): void
     {
         $this->actor->assignRole(
-            $role = Role::create(['name' => 'unknown'])
+            $role = Role::create([
+                'name' => 'unknown',
+                'organisation_id' => $this->organisation->id,
+            ])
         );
 
         $this->signIn($this->actor);

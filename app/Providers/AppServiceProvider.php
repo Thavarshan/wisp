@@ -97,10 +97,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configurePassport(): void
     {
-        if ($this->app->environment('production')) {
-            Passport::hashClientSecrets();
-        }
-
+        Passport::hashClientSecrets();
         Passport::useClientModel(Client::class);
         Passport::useTokenModel(Token::class);
         Passport::enablePasswordGrant();

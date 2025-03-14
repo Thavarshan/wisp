@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Traits\HasOrganisationRelationship;
+use App\Models\Traits\HasOrganisationRelationship;
 use Database\Factories\ClientFactory;
 use Laravel\Passport\Client as PassportClient;
 

@@ -9,11 +9,11 @@ $verificationLimiter = config('auth.limiters.verification', '6,1');
 Route::group([
     'middleware' => ['auth:api', 'tenant'],
 ], function () use ($verificationLimiter) {
-    Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
+    Route::get('email/verify/{id}/{hash}', VerifyEmailController::class)
         ->middleware(['signed', 'throttle:'.$verificationLimiter])
         ->name('verification.verify');
 
-    Route::post('/email/verification-notification', EmailVerificationNotificationController::class)
+    Route::post('email/verification-notification', EmailVerificationNotificationController::class)
         ->middleware(['throttle:'.$verificationLimiter])
         ->name('verification.send');
 });

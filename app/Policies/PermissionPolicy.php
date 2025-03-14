@@ -4,8 +4,8 @@ namespace App\Policies;
 
 use App\Enums\Permission as PermissionEnum;
 use App\Enums\Resource;
+use App\Models\Permission;
 use App\Models\User;
-use Spatie\Permission\Models\Permission;
 
 class PermissionPolicy extends Policy
 {

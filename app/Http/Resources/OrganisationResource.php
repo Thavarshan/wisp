@@ -22,8 +22,8 @@ class OrganisationResource extends JsonResource
             'phone' => $this->phone,
             'website' => $this->website,
             'logo' => $this->logo,
-            'teams' => TeamResource::collection($this->teams),
-            'users' => UserResource::collection($this->users),
+            'teams' => TeamResource::collection($this->whenLoaded('teams')),
+            'users' => UserResource::collection($this->whenLoaded('users')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

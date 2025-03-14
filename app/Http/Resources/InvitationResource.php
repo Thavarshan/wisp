@@ -18,7 +18,10 @@ class InvitationResource extends JsonResource
             'uid' => $this->uid,
             'email' => $this->email,
             'role' => $this->role,
-            'organisation' => $this->whenLoaded('organisation', fn () => $this->organisation->only('uid', 'name')),
+            'organisation' => $this->whenLoaded(
+                'organisation',
+                fn () => $this->organisation->only('uid', 'name')
+            ),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

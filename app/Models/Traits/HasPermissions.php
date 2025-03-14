@@ -3,11 +3,26 @@
 namespace App\Models\Traits;
 
 use App\Enums\Permission as PermissionEnum;
+use App\Enums\Role;
 use App\Models\Permission;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use InvalidArgumentException;
 
 trait HasPermissions
 {
+    /**
+     * Find or create a role by name.
+     */
+    public static function admin(): self
+    {
+        $name = Role::ADMIN->value;
+
+        return self::firstOrCreate(
+            ['name' => $name],
+            ['name' => $name]
+        );
+    }
+
     /**
      * A role may have many permissions.
      */
@@ -123,6 +138,6 @@ trait HasPermissions
             return Permission::where('name', $permission)->firstOrFail();
         }
 
-        throw new \InvalidArgumentException('Invalid permission type or permission not found');
+        throw new InvalidArgumentException('Invalid permission type or permission not found');
     }
 }

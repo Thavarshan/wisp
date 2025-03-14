@@ -1,4 +1,5 @@
 <?php
+
 // the FireDragon species implements the Reptile interface. When a ReptileEgg hatches, a new reptile will be created of the same species that laid the egg. An exception is thrown if a ReptileEgg tries to hatch more than once.
 
 interface Reptile
@@ -17,6 +18,7 @@ class FireDragon implements Reptile
 class ReptileEgg
 {
     protected $reptileType;
+
     protected $hatched = false;
 
     public function __construct(string $reptileType)
@@ -27,9 +29,10 @@ class ReptileEgg
     public function hatch(): Reptile
     {
         if ($this->hatched) {
-            throw new Exception("This egg has already hatched.");
+            throw new Exception('This egg has already hatched.');
         }
         $this->hatched = true;
-        return new $this->reptileType();
+
+        return new $this->reptileType;
     }
 }

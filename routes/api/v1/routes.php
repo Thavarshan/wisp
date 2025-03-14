@@ -20,7 +20,7 @@ Route::group([
     Route::group([
         'middleware' => ['auth:api', 'tenant'],
     ], function () {
-        Route::get('/user', function (Request $request) {
+        Route::get('user', function (Request $request) {
             return response()->json(new UserResource($request->user()));
         });
 
@@ -32,7 +32,7 @@ Route::group([
         Route::apiResource('invitations', InvitationController::class);
     });
 
-    Route::post('/onboarding', OnboardingController::class)
+    Route::post('onboarding', OnboardingController::class)
         ->middleware('client')
         ->name('onboarding');
 });

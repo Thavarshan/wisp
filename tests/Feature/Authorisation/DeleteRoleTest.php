@@ -29,9 +29,10 @@ class DeleteRoleTest extends TestCase
 
     public function test_delete_as_non_admin(): void
     {
-        $this->actor->assignRole(
-            Role::create(['name' => 'unknown'])
-        );
+        $this->actor->assignRole(Role::create([
+            'name' => 'unknown',
+            'organisation_id' => $this->actor->organisation_id,
+        ]));
 
         $this->signIn($this->actor);
 

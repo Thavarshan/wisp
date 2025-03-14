@@ -29,18 +29,18 @@ abstract class TestCase extends BaseTestCase
     /**
      * {@inheritdoc}
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
-        $organisation = $this->getOrganisation();
+        $this->getOrganisation();
 
         if (! $this->withoutSeedingPermissions) {
             $this->seed(RolePermissionSeeder::class);
         }
 
         $this->actor = User::factory()
-            ->for($organisation)
+            ->for($this->organisation)
             ->create();
     }
 
@@ -79,6 +79,8 @@ abstract class TestCase extends BaseTestCase
     {
         if (is_null($this->organisation)) {
             $this->organisation = Organisation::getDefault();
+
+            $this->organisation->makeCurrent();
         }
 
         return $this->organisation;

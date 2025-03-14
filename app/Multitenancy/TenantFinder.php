@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\Organisation;
 use App\Models\Token;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Lcobucci\JWT\Parser as JWTParser;
 use Spatie\Multitenancy\Contracts\IsTenant;
 use Spatie\Multitenancy\TenantFinder\TenantFinder as AbstractTenantFinder;
@@ -24,28 +25,51 @@ class TenantFinder extends AbstractTenantFinder
      */
     public function findForRequest(Request $request): ?IsTenant
     {
-        // If request is authenticated and has access token
-        if ($request->user() && $request->bearerToken()) {
-            $tokenId = $this->parser
-                ->parse($request->bearerToken())
-                ->headers()
-                ->get('jti');
-
-            $token = Token::find($tokenId);
-
-            if ($token) {
-                return Organisation::find($token->organisation_id);
-            }
+        if ($tenant = $this->findTenantByToken($request)) {
+            return $tenant;
         }
 
-        // If the request body has a client_id
-        if ($request->has('client_id')) {
-            return Organisation::find(
-                Client::find($request->client_id)->organisation_id
-            );
+        if ($tenant = $this->findTenantByClientId($request)) {
+            return $tenant;
         }
 
-        // Default organisation
         return Organisation::getDefault();
+    }
+
+    /**
+     * Find a tenant by the given token.
+     */
+    protected function findTenantByToken(Request $request): ?IsTenant
+    {
+        if (is_null($request->bearerToken())) {
+            return null;
+        }
+
+        $tokenId = $this->parser
+            ->parse($request->bearerToken())
+            ->headers()
+            ->get('jti');
+
+        $token = Token::find($tokenId);
+
+        return $token ? Organisation::find($token->organisation_id) : null;
+    }
+
+    /**
+     * Find a tenant by the given client id.
+     */
+    protected function findTenantByClientId(Request $request): ?IsTenant
+    {
+        if (! $request->hasHeader('X-Cerberus-Client-ID')) {
+            return null;
+        }
+
+        $client = Client::find($request->header('X-Cerberus-Client-ID'));
+
+        if (! Hash::check($request->header('X-Cerberus-Client-Secret'), $client->secret)) {
+            return null;
+        }
+
+        return $client ? Organisation::find($client->organisation_id) : null;
     }
 }

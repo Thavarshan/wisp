@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Traits\HasOrganisationRelationship;
+use App\Models\Traits\HasOrganisationRelationship;
 use Laravel\Passport\Client;
 use Laravel\Passport\Token as PassportToken;
 

@@ -20,6 +20,16 @@ trait HasUid
     }
 
     /**
+     * Find a model by its unique identifier.
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public static function findByUid(string $uid): static
+    {
+        return static::where('uid', $uid)->firstOrFail();
+    }
+
+    /**
      * Generate a new and unique code
      */
     public function generateHashId(): void
@@ -29,7 +39,7 @@ trait HasUid
             ? sprintf('%s-%s', $this->getPrefix(), $code)
             : $code;
 
-        $this->forceFill(compact('uid'))->saveQuietly();
+        $this->forceFill(['uid' => $uid])->saveQuietly();
     }
 
     /**
@@ -70,15 +80,5 @@ trait HasUid
     public function getRouteKeyName()
     {
         return 'uid';
-    }
-
-    /**
-     * Find a model by its unique identifier.
-     *
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
-     */
-    public static function findByUid(string $uid): static
-    {
-        return static::where('uid', $uid)->firstOrFail();
     }
 }

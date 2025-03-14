@@ -3,10 +3,10 @@
 namespace Tests\Feature\Authorisation;
 
 use App\Enums\Role as RoleEnum;
+use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Group;
-use Spatie\Permission\Models\Permission;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -23,7 +23,6 @@ class CreatePermissionTest extends TestCase
 
         $permission = Permission::make([
             'name' => 'permission-name',
-            'guard_name' => 'api',
         ]);
 
         $response = $this->postJson(route('v1.permissions.store'), [
@@ -52,15 +51,15 @@ class CreatePermissionTest extends TestCase
 
     public function test_store_as_non_admin(): void
     {
-        $this->actor->assignRole(
-            Role::create(['name' => 'unknown'])
-        );
+        $this->actor->assignRole(Role::create([
+            'name' => 'unknown',
+            'organisation_id' => $this->actor->organisation_id,
+        ]));
 
         $this->signIn($this->actor);
 
         $permission = Permission::make([
             'name' => 'permission-name',
-            'guard_name' => 'api',
         ]);
 
         $response = $this->postJson(route('v1.permissions.store'), [

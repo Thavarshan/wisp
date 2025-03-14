@@ -16,10 +16,6 @@ class RoleFilter extends Filter
 
     /**
      * Filter the query by a given attribute value.
-     *
-     * @param string $value
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     protected function filter(string $value): Builder
     {
