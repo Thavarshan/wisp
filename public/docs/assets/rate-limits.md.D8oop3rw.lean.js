@@ -1,1 +1,0 @@
-import{_ as t,c as e,o as a}from"./chunks/framework.BAjNsQ49.js";const d=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"rate-limits.md","filePath":"rate-limits.md"}'),r={name:"rate-limits.md"};function s(i,o,c,n,m,p){return a(),e("div")}const l=t(r,[["render",s]]);export{d as __pageData,l as default};

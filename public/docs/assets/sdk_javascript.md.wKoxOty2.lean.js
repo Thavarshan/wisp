@@ -1,1 +1,0 @@
-import{_ as t,c as a,o as e}from"./chunks/framework.BAjNsQ49.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"sdk/javascript.md","filePath":"sdk/javascript.md"}'),s={name:"sdk/javascript.md"};function r(c,o,n,p,i,d){return e(),a("div")}const f=t(s,[["render",r]]);export{m as __pageData,f as default};

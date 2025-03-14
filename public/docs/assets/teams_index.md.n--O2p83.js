@@ -1,1 +1,0 @@
-import{_ as e,c as t,o as a}from"./chunks/framework.BAjNsQ49.js";const _=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"teams/index.md","filePath":"teams/index.md"}'),n={name:"teams/index.md"};function s(r,o,c,d,i,m){return a(),t("div")}const f=e(n,[["render",s]]);export{_ as __pageData,f as default};

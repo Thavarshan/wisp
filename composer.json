@@ -1,65 +1,36 @@
 {
-    "name": "cerberus-iam/cerberus",
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "laravel/vue-starter-kit",
     "type": "project",
-    "description": "Simple IAM service API",
+    "description": "The skeleton application for the Laravel framework.",
     "keywords": [
-        "cerberus",
-        "api",
-        "iam",
-        "auth",
-        "passport",
-        "vite"
+        "laravel",
+        "framework"
     ],
-    "license": "proprietary",
-    "authors": [
-        {
-            "name": "Jerome Thayananthajothy",
-            "email": "tjthavarshan@gmail.com"
-        }
-    ],
-    "repository": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/cerberus-iam/cerberus"
-        }
-    ],
+    "license": "MIT",
     "require": {
-        "php": "^8.3",
-        "hashids/hashids": "^5.0",
-        "jerome/fetch-php": "^2.0",
-        "jerome/filterable": "^1.2",
-        "laravel/cashier": "^15.6",
-        "laravel/framework": "^12.0",
-        "laravel/passport": "^12.0",
-        "laravel/tinker": "^2.10",
-        "lcobucci/jwt": "^5.5",
-        "spatie/laravel-medialibrary": "^11.12",
-        "spatie/laravel-multitenancy": "^4.0",
-        "spatie/laravel-sluggable": "^3.7",
+        "php": "^8.2",
         "inertiajs/inertia-laravel": "^2.0",
+        "laravel/framework": "^12.0",
+        "laravel/tinker": "^2.10.1",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
-        "brianium/paratest": "^7.8",
-        "fakerphp/faker": "^1.24",
-        "laravel/pail": "^1.2",
+        "fakerphp/faker": "^1.23",
+        "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.21",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^11.5",
+        "phpunit/phpunit": "^11.5.3",
         "tightenco/duster": "^3.1"
     },
     "autoload": {
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/",
-            "Database\\Traits\\": "database/traits/"
-        },
-        "files": [
-            "app/Support/helpers.php"
-        ]
+            "Database\\Seeders\\": "database/seeders/"
+        }
     },
     "autoload-dev": {
         "psr-4": {
@@ -90,9 +61,7 @@
             "npm run build:ssr",
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,queue,logs,ssr"
-        ],
-        "lint": "chmod +x bin/lint.sh && ./bin/lint.sh",
-        "fix": "chmod +x bin/fix.sh && ./bin/fix.sh"
+        ]
     },
     "extra": {
         "laravel": {

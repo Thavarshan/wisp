@@ -1,295 +1,213 @@
-# Cerberus IAM | API
+# Cryptide - One-Time Secret Sharing Application
 
-## Overview
+Cryptide is a secure and straightforward application for sharing encrypted, one-time secrets through a protected link that automatically expires. Once a secret is viewed or reaches its expiration time, it is permanently deleted. For added security, users can set an optional password.
 
-Cerberus is a robust Identity and Access Management (IAM) platform API built with Laravel and Laravel Passport. It provides enterprise-grade user identity management, authentication, and authorization capabilities through a RESTful API interface.
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Database Migrations](#database-migrations)
+- [Usage](#usage)
+  - [Creating a Secret](#creating-a-secret)
+  - [Accessing a Secret](#accessing-a-secret)
+- [Testing](#testing)
+  - [Run Feature Tests](#run-feature-tests)
+  - [Run Frontend Tests](#run-frontend-tests)
+- [Project Structure](#project-structure)
+- [Security Considerations](#security-considerations)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
-### Core Functionality
+- Share encrypted, one-time secrets via secure links.
+- Optional password protection for shared secrets.
+- Automatic expiration and deletion of secrets after a single view or expiration time.
+- Customizable expiration times ranging from minutes to days.
+- User-friendly interface for creating and accessing secrets.
+- Secure handling of passwords using hashing and encryption.
+- Destruction of secrets upon viewing or manual obliteration.
 
-- **User Management**
-  - Registration with email verification
-  - Profile management
-  - Password recovery and reset
-  - Account deactivation/reactivation
+## Technologies Used
 
-- **Authentication**
-  - OAuth2 implementation via Laravel Passport
-  - Bearer token authentication
-  - Refresh token rotation
-  - Session management
-  - API key generation and management
+- **Backend:** Laravel 12, PHP 8.4
+- **Frontend:** Vue 3, Inertia.js, TypeScript
+- **Database:** PostgreSQL
+- **Styling:** Tailwind CSS, shadcn/ui components
+- **Security:** Laravel Encryption, Hashing, HTTPS
+- **Hosting:** Heroku
+- **JavaScript Runtime:** NodeJS v22
 
-- **Authorization**
-  - Role-Based Access Control (RBAC)
-  - Permission-based access control
-  - Resource-level permissions
-  - Custom policy definitions
+## Requirements
 
-- **Security**
-  - Multi-Factor Authentication (MFA)
-  - Brute force protection
-  - Rate limiting
-  - IP whitelisting
-  - Request validation and sanitization
-
-- **Audit & Monitoring**
-  - Comprehensive audit logging
-  - User activity tracking
-  - Failed authentication attempts
-  - Security event logging
-  - API usage metrics
-
-## Prerequisites
-
-### System Requirements
-
-- PHP 8.1 or higher
-- Composer 2.0+
-- MySQL 8.0+ or PostgreSQL 13+
-- Redis (for caching and queues)
-- Node.js 16+ and NPM (for frontend assets)
-
-### Required Extensions
-
-- PHP Extensions:
-  - OpenSSL
-  - PDO
-  - Mbstring
-  - Tokenizer
-  - XML
-  - Ctype
-  - JSON
-  - BCMath
+- PHP 8.4 or higher
+- Composer
+- Node.js v22 and npm
+- PostgreSQL
+- OpenSSL for encryption
+- Nginx or Apache server
 
 ## Installation
 
-1. Clone the repository:
+1. **Clone the repository:**
 
-```bash
-git clone https://github.com/your-org/cerberus.git
-cd cerberus
-```
+   ```bash
+   git clone https://github.com/your-username/cryptide.git
+   cd cryptide
+   ```
 
-2. Install PHP dependencies:
+2. **Install PHP dependencies:**
 
-```bash
-composer install
-```
+   ```bash
+   composer install
+   ```
 
-3. Copy the environment file:
+3. **Install Node dependencies:**
 
-```bash
-cp .env.example .env
-```
+   ```bash
+   npm install
+   ```
 
-4. Generate application key:
+4. **Compile front-end assets:**
 
-```bash
-php artisan key:generate
-```
-
-5. Configure your database in `.env`:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=cerberus
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-```
-
-6. Run database migrations and seeders:
-
-```bash
-php artisan migrate
-php artisan db:seed
-```
-
-7. Install Laravel Passport:
-
-```bash
-php artisan passport:install
-```
-
-8. Configure Passport keys:
-
-```bash
-php artisan passport:keys
-```
+   ```bash
+   npm run build
+   ```
 
 ## Configuration
 
-### Environment Variables
+1. **Copy `.env` file:**
 
-Key configuration options in your `.env` file:
+   ```bash
+   cp .env.example .env
+   ```
 
-```env
-APP_NAME=Cerberus
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://your-domain.com
+2. **Configure database in `.env`:**
 
-# OAuth Configuration
-PASSPORT_TOKEN_EXPIRE_IN=1440
-PASSPORT_REFRESH_TOKEN_EXPIRE_IN=43200
+   ```
+   DB_CONNECTION=pgsql
+   DB_HOST=127.0.0.1
+   DB_PORT=5432
+   DB_DATABASE=cryptide
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
+   ```
 
-# Mail Configuration
-MAIL_MAILER=smtp
-MAIL_HOST=your-smtp-host
-MAIL_PORT=587
-MAIL_USERNAME=your-username
-MAIL_PASSWORD=your-password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=noreply@your-domain.com
-MAIL_FROM_NAME="${APP_NAME}"
+3. **Generate application key:**
 
-# Redis Configuration
-REDIS_HOST=127.0.0.1
-REDIS_PASSWORD=null
-REDIS_PORT=6379
+   ```bash
+   php artisan key:generate
+   ```
+
+4. **Configure encryption settings in `.env`:**
+
+   ```
+   APP_KEY=base64:your_generated_key
+   APP_CIPHER=AES-256-CBC
+   ```
+
+## Database Migrations
+
+Run the following command to create database tables:
+
+```bash
+php artisan migrate
 ```
 
-### Security Settings
+## Usage
 
-Configure security-related settings in `config/auth.php`:
+### Creating a Secret
 
-```php
-return [
-    'defaults' => [
-        'guard' => 'api',
-        'passwords' => 'users',
-    ],
-    'guards' => [
-        'api' => [
-            'driver' => 'passport',
-            'provider' => 'users',
-        ],
-    ],
-    // ...
-];
-```
+1. Visit the homepage and fill out the form:
+   - Secret content
+   - Optional name
+   - Expiration time
+   - Optional password
 
-## API Documentation
+2. Click "Store Secret" to generate a secure link.
 
-### Authentication Endpoints
+### Accessing a Secret
 
-#### OAuth2 Password Grant
-
-```http
-POST /oauth/token
-Content-Type: application/json
-
-{
-    "grant_type": "password",
-    "client_id": "client-id",
-    "client_secret": "client-secret",
-    "username": "user@example.com",
-    "password": "password",
-    "scope": ""
-}
-```
-
-#### OAuth2 Refresh Token
-
-```http
-POST /oauth/token
-Content-Type: application/json
-
-{
-    "grant_type": "refresh_token",
-    "refresh_token": "def502...",
-    "client_id": "client-id",
-    "client_secret": "client-secret",
-    "scope": ""
-}
-```
-
-#### Register
-
-```http
-POST /api/v1/auth/register
-Content-Type: application/json
-
-{
-    "name": "John Doe",
-    "email": "user@example.com",
-    "password": "password",
-    "password_confirmation": "password"
-}
-```
-
-### User Management Endpoints
-
-#### Get User Profile
-
-```http
-GET /api/v1/users/profile
-Authorization: Bearer {access_token}
-```
-
-#### Update User Profile
-
-```http
-PUT /api/v1/users/profile
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-    "name": "Updated Name",
-    "email": "new.email@example.com"
-}
-```
-
-For complete API documentation, visit `/docs` after setting up the application.
+1. Use the provided secure link to access the secret.
+2. Enter the password if the secret is password-protected.
+3. The secret will be destroyed upon viewing.
 
 ## Testing
 
-Run the test suite:
+### Run Feature Tests
 
 ```bash
 php artisan test
 ```
 
-Run specific test category:
+### Run Frontend Tests
 
 ```bash
-php artisan test --group=auth
-php artisan test --group=users
-php artisan test --group=roles
+npm run test
+```
+
+## Project Structure
+
+```
+cryptide/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   ├── Requests/
+│   ├── Models/
+├── resources/
+│   ├── js/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── utils/
+│   ├── views/
+├── routes/
+│   ├── web.php
+├── tests/
+│   ├── Feature/
+│   ├── Unit/
+├── .env.example
+├── package.json
+├── composer.json
+└── README.md
 ```
 
 ## Security Considerations
 
-- Always use HTTPS in production
-- Regularly rotate OAuth client secrets
-- Monitor failed authentication attempts
-- Enable MFA for administrative accounts
-- Keep all dependencies up to date
-- Regular security audits and penetration testing
-- Implement proper OAuth2 scopes for access control
-- Use secure Passport token storage
+- **Encryption:** Secrets are encrypted using Laravel's AES-256-CBC encryption.
+- **Password Protection:** Passwords are hashed using Bcrypt.
+- **HTTPS:** Ensure HTTPS is enabled for secure communication.
+- **Auto-deletion:** Secrets are automatically deleted after viewing or expiration.
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+1. Fork the repository.
+2. Create a new branch:
+
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+3. Commit your changes:
+
+   ```bash
+   git commit -m "Add your message here"
+   ```
+
+4. Push to the branch:
+
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+5. Create a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
-
-For support, email <tjthavarshan@gmail.com> or create an issue in the GitHub repository.
-
-## Acknowledgments
-
-- Laravel Team for the amazing framework
-- Laravel Passport contributors
-- All other open-source packages used in this project
+For any issues, please open an issue on GitHub. Thank you for using Cryptide!
