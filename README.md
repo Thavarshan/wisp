@@ -1,6 +1,6 @@
-# Cryptide - One-Time Secret Sharing Application
+# Vault-0 - One-Time Secret Sharing Application
 
-Cryptide is a secure and straightforward application for sharing encrypted, one-time secrets through a protected link that automatically expires. Once a secret is viewed or reaches its expiration time, it is permanently deleted. For added security, users can set an optional password.
+Vault-0 is a secure and straightforward application for sharing encrypted, one-time secrets through a protected link that automatically expires. Once a secret is viewed or reaches its expiration time, it is permanently deleted. For added security, users can set an optional password.
 
 ## Table of Contents
 
@@ -56,8 +56,8 @@ Cryptide is a secure and straightforward application for sharing encrypted, one-
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/cryptide.git
-   cd cryptide
+   git clone https://github.com/Thavarshan/vault-0.git
+   cd vault-0
    ```
 
 2. **Install PHP dependencies:**
@@ -92,7 +92,7 @@ Cryptide is a secure and straightforward application for sharing encrypted, one-
    DB_CONNECTION=pgsql
    DB_HOST=127.0.0.1
    DB_PORT=5432
-   DB_DATABASE=cryptide
+   DB_DATABASE=vault-0
    DB_USERNAME=your_username
    DB_PASSWORD=your_password
    ```
@@ -153,7 +153,7 @@ npm run test
 ## Project Structure
 
 ```
-cryptide/
+vault-0/
 ├── app/
 │   ├── Http/
 │   │   ├── Controllers/
@@ -210,4 +210,4 @@ cryptide/
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-For any issues, please open an issue on GitHub. Thank you for using Cryptide!
+For any issues, please open an issue on GitHub. Thank you for using Vault-0!
