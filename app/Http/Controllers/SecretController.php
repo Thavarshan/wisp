@@ -55,16 +55,16 @@ class SecretController extends Controller implements HasMiddleware
      */
     public function destroy(
         Request $request,
-        Secret $secret
+        string $secretUid
     ): RedirectResponse|Response {
-        Gate::authorize('delete', $secret);
-        
-        $secret->delete();
+        $secret = Secret::findByUid($secretUid);
 
-        if ($request->wantsJson()) {
-            return response()->noContent();
-        }
+        // Delete the secret if it exists
+        $secret?->delete();
 
-        return redirect()->route('home');
+        // Return appropriate response based on request type
+        return $request->wantsJson()
+            ? response()->noContent()
+            : redirect()->route('home');
     }
 }
