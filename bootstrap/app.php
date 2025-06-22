@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\ClearExpiredSecrets;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecureSecret;
@@ -31,6 +32,6 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withSchedule(function ($schedule) {
-        $schedule->command('secrets:clear-expired-secrets')->daily();
+        $schedule->command(ClearExpiredSecrets::class)->daily();
     })
     ->create();
