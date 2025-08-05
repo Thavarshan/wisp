@@ -26,7 +26,7 @@ class ValidateSecretPasswordRule implements ValidationRule
         }
 
         if (! Hash::check($value, $this->secret->password)) {
-            $fail(__('The provided password is incorrect.'));
+            $fail('The provided password is incorrect.');
         }
     }
 }
