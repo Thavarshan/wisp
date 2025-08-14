@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('uid')->unique();
             $table->string('name')->nullable();
             $table->text('content');
-            $table->string('password')->nullable()->unique();
+            $table->string('password')->nullable();
             $table->timestamp('expired_at');
             $table->timestamps();
         });

@@ -26,10 +26,10 @@ class StoreSecretRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['nullable', 'string'],
-            'content' => ['required', 'string'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'content' => ['required', 'string', 'max:10000'], // 10KB limit for secret content
             'expired_at' => ['required', 'string', Rule::enum(ExpirationOption::class)],
-            'password' => ['nullable', 'string'],
+            'password' => ['nullable', 'string', 'max:255'],
         ];
     }
 

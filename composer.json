@@ -1,11 +1,16 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/vue-starter-kit",
+    "name": "thavarshan/vault-0",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Vault-0 is a secure Laravel-based application for sharing encrypted, one-time secrets via expiring protected links.",
     "keywords": [
         "laravel",
-        "framework"
+        "framework",
+        "vault-0",
+        "secret-sharing",
+        "encryption",
+        "one-time-secret",
+        "secure-link"
     ],
     "license": "MIT",
     "require": {

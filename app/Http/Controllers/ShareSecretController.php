@@ -16,6 +16,10 @@ class ShareSecretController extends Controller
     {
         $secret = Secret::findByUid($request->query('secret'));
 
+        if (! $secret) {
+            abort(404, 'Secret not found.');
+        }
+
         return Inertia::render('Share', [
             'link' => $secret->getShareLink(),
             'expired_at' => $secret->expired_at->diffForHumans(),

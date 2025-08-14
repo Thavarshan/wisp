@@ -11,15 +11,17 @@ Route::get('/', function () {
 })->name('home');
 
 Route::resource('secrets', SecretController::class)
-    ->only(['store', 'show']);
+    ->only(['store', 'show'])
+    ->middleware('throttle:60,1'); // Limit to 60 requests per minute per IP
 
-Route::delete('secrets/{secret}/destroy', [SecretController::class, 'destroy'])
-    ->name('secrets.destroy');
+Route::delete('secrets/{secret}', [SecretController::class, 'destroy'])
+    ->name('secrets.destroy')
+    ->middleware('throttle:30,1'); // Limit deletions to 30 per minute
 
 Route::get('share', ShareSecretController::class)
-    ->middleware('secure.secret')
+    ->middleware(['secure.secret', 'throttle:120,1'])
     ->name('secrets.share');
 
 Route::post('secrets/{secret}/password', ValidateSecretPasswordController::class)
-    ->middleware('secure.secret')
+    ->middleware(['secure.secret', 'throttle:10,1']) // More restrictive for password attempts
     ->name('secrets.password');
