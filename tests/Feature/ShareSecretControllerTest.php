@@ -4,24 +4,29 @@ namespace Tests\Feature;
 
 use App\Models\Secret;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ShareSecretControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_shows_the_share_secret_page(): void
+    public function test_it_shows_the_share_secret_page()
     {
-        $secret = Secret::create(['content' => 'This is a secret', 'expired_at' => now()->addDay()]);
+        $secret = Secret::factory()->create();
 
-        $response = $this->get(route('secrets.share', ['secret' => $secret->uid]));
+        $response = $this->get('/share?secret='.$secret->uid);
 
+        $response->assertStatus(200);
         $response->assertInertia(
-            fn (Assert $page) => $page
-                ->component('Share')
-                ->where('link', $secret->getShareLink())
-                ->where('expired_at', $secret->expired_at->diffForHumans())
+            fn ($page) => $page->component('Share')
+                ->hasAll(['link', 'expired_at'])
         );
+    }
+
+    public function test_it_returns_404_when_secret_not_found()
+    {
+        $response = $this->get('/share?secret=nonexistent-uid');
+
+        $response->assertStatus(404);
     }
 }

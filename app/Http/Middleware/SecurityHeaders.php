@@ -10,19 +10,41 @@ class SecurityHeaders
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
 
-        // Add security headers
-        $response->headers->set('X-Content-Type-Options', 'nosniff');
-        $response->headers->set('X-Frame-Options', 'DENY');
-        $response->headers->set('X-XSS-Protection', '1; mode=block');
-        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net; img-src 'self' data:; connect-src 'self';");
+        // Basic security headers
+        foreach (config('security.headers') as $header => $value) {
+            $response->headers->set($header, $value);
+        }
+
+        // Content Security Policy
+        $cspDirectives = app()->environment('local')
+            ? config('security.csp.development')
+            : config('security.csp.production');
+
+        $csp = collect($cspDirectives)
+            ->map(fn ($value, $directive) => "{$directive} {$value}")
+            ->implode('; ');
+
+        $response->headers->set('Content-Security-Policy', $csp);
+
+        // HSTS header (production only with HTTPS)
+        if (app()->isProduction() && $request->isSecure()) {
+            $hsts = 'max-age='.config('security.hsts.max_age');
+
+            if (config('security.hsts.include_subdomains')) {
+                $hsts .= '; includeSubDomains';
+            }
+
+            if (config('security.hsts.preload')) {
+                $hsts .= '; preload';
+            }
+
+            $response->headers->set('Strict-Transport-Security', $hsts);
+        }
 
         return $response;
     }

@@ -23,3 +23,17 @@ yarn-error.log
 /.vscode
 /.zed
 .DS_Store
+
+# Test Coverage Reports
+/coverage-report/
+/coverage/
+/clover.xml
+/coverage.xml
+/coverage.clover
+/coverage.txt
+/coverage.json
+/.coverage_output/
+/phpunit-coverage.xml
+/c3.php
+/tests/_output/
+*.coverage
