@@ -3,20 +3,24 @@ import AppLogo from '@/components/AppLogo.vue';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Toaster, useToast } from '@/components/ui/toast';
-import { Head, router } from '@inertiajs/vue3';
+import { Toaster } from '@/components/ui/toast';
+import { Head } from '@inertiajs/vue3';
 import { Copy, Bomb } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
-import copy from 'copy-to-clipboard';
+import { computed } from 'vue';
 import { extractSecretUid } from '@/lib/utils';
+
+// Composables
+import { useClipboard } from '@/composables/useClipboard';
+import { useSecretActions } from '@/composables/useSecretActions';
 
 const props = defineProps<{
     link: string;
     expired_at: string;
 }>();
 
-const { toast } = useToast();
-const isDeleted = ref(false);
+// Initialize composables
+const { copyToClipboard } = useClipboard();
+const { deleteSecret, isDeleted } = useSecretActions();
 
 const shareLink = computed({
     get: () => props.link,
@@ -24,20 +28,14 @@ const shareLink = computed({
 });
 
 function handleCopy() {
-    copy(props.link);
-    toast({
-        title: 'Copied!',
-        description: 'Link copied to clipboard.',
-    });
+    copyToClipboard(props.link);
 }
 
-function handleDelete() {
-    router.delete(route('secrets.destroy', { secret: extractSecretUid(props.link) }));
-    isDeleted.value = true;
-    toast({
-        title: 'Deleted!',
-        description: 'Your secret has been obliterated.',
-    });
+async function handleDelete() {
+    const uid = extractSecretUid(props.link);
+    if (uid) {
+        await deleteSecret(uid);
+    }
 }
 </script>
 
@@ -63,7 +61,7 @@ function handleDelete() {
             </div>
 
             <Button type="button" variant="destructive" size="lg" class="w-full" @click="handleDelete" :disabled="isDeleted">
-                <Bomb class="size-4" />
+                <Bomb class="size-4 mr-2" />
                 {{ isDeleted ? 'Secret Obliterated' : 'Obliterate secret' }}
             </Button>
         </div>

@@ -5,14 +5,32 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function generateSecurePassword() {
+export function generateSecurePassword(length = 12): string {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
-    const length = 12;  // Password length
-    let password = '';
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * charset.length);
-        password += charset[randomIndex];
+
+    // Validate input
+    if (length < 8 || length > 128) {
+        throw new Error('Password length must be between 8 and 128 characters');
     }
+
+    let password = '';
+
+    // Use crypto.getRandomValues if available for better randomness
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        const array = new Uint32Array(length);
+        crypto.getRandomValues(array);
+
+        for (let i = 0; i < length; i++) {
+            password += charset[array[i] % charset.length];
+        }
+    } else {
+        // Fallback to Math.random (less secure but compatible)
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * charset.length);
+            password += charset[randomIndex];
+        }
+    }
+
     return password;
 };
 

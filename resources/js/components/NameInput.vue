@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input';
+import InputError from '@/components/InputError.vue';
 import { computed } from 'vue';
 
 const props = defineProps<{
     modelValue: string;
+    error?: string;
 }>();
 
 const emit = defineEmits(['update:modelValue']);
@@ -16,9 +18,12 @@ const nameValue = computed({
 </script>
 
 <template>
-    <Input
-        v-model="nameValue"
-        type="text"
-        placeholder="Name (optional)"
-    />
+    <div>
+        <Input
+            v-model="nameValue"
+            type="text"
+            placeholder="Name (optional)"
+        />
+        <InputError v-if="error" :message="error" />
+    </div>
 </template>

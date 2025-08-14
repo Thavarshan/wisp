@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import axios from 'axios';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import duration from 'dayjs/plugin/duration';
-import copy from 'copy-to-clipboard';
-import { Toaster, useToast } from '@/components/ui/toast';
+import { Toaster } from '@/components/ui/toast';
 import { getUidFromRoute } from '@/lib/utils';
 import AppLogo from '@/components/AppLogo.vue';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
@@ -19,6 +14,11 @@ import { AlertCircle, Copy, Eye } from 'lucide-vue-next';
 import SecretContentInput from '@/components/SecretContentInput.vue';
 import InputError from '@/components/InputError.vue';
 
+// Composables
+import { useSecretTimer } from '@/composables/useSecretTimer';
+import { useClipboard } from '@/composables/useClipboard';
+import { useSecretActions } from '@/composables/useSecretActions';
+
 const props = defineProps<{
     secret: string;
     has_password: boolean;
@@ -26,51 +26,25 @@ const props = defineProps<{
 }>();
 
 const revealed = ref(false);
-const expirationTimeout = ref<number | null>(null);
-const countdown = ref('');
-const intervalId = ref<number | undefined>(undefined);
-const { toast } = useToast();
 const form = useForm<{ password: string; }>({ password: '' });
 const uid = getUidFromRoute();
 
-dayjs.extend(relativeTime);
-dayjs.extend(duration);
+// Initialize composables
+const { countdown } = useSecretTimer(props.expired_at, () => {
+    window.location.reload();
+});
 
-const expirationTime = computed(() => dayjs(props.expired_at));
+const { copyToClipboard } = useClipboard();
+const { deleteSecret } = useSecretActions();
+
 const content = computed({
     get: () => (revealed.value ? props.secret : ''),
     set: () => '' // Read-only
 });
 
-// Function to update the countdown clock every second
-function updateCountdown() {
-    const now = dayjs();
-    const timeLeft = expirationTime.value.diff(now);
-
-    if (timeLeft <= 0) {
-        countdown.value = 'Expired';
-        clearInterval(intervalId.value);
-        checkExpiration();
-    } else {
-        const durationLeft = dayjs.duration(timeLeft);
-        countdown.value = `${durationLeft.minutes()}m ${durationLeft.seconds()}s`;
-    }
-}
-
-// Function to check if the secret has expired and refresh the page
-function checkExpiration() {
-    if (expirationTime.value.isBefore(dayjs())) {
-        window.location.reload();
-    }
-}
-
 // Function to copy secret to clipboard
 function handleCopy() {
-    copy(props.secret);
-    toast({
-        title: 'Secret copied',
-        description: 'The secret has been copied to your clipboard.',
-    });
+    copyToClipboard(props.secret);
 }
 
 // Function to reveal the secret
@@ -89,48 +63,18 @@ function handleRevealSecret() {
 }
 
 // Function to delete the secret after revealing
-function obliterateSecret(callback?: () => void): void {
-    axios.delete(route('secrets.destroy', { secret: uid }))
-        .then(() => {
-            if (callback) callback();
-        })
-        .catch((error) => {
-            toast({
-                title: 'Unable to reveal secret',
-                description: 'An error occurred while trying to reveal the secret: ' + error.message,
-            });
-        });
+async function obliterateSecret(callback?: () => void): Promise<void> {
+    if (!uid) return;
+
+    const success = await deleteSecret(uid);
+
+    if (success && callback) {
+        callback();
+    } else if (!success) {
+        // If deletion failed, still allow revealing but show error
+        if (callback) callback();
+    }
 }
-
-// Watch for changes in expired_at and refresh when expired
-watch(expirationTime, (newExpirationTime) => {
-    if (expirationTimeout.value) {
-        clearTimeout(expirationTimeout.value);
-    }
-
-    const now = dayjs();
-    const timeLeft = newExpirationTime.diff(now);
-
-    if (timeLeft <= 0) {
-        checkExpiration();
-    } else {
-        expirationTimeout.value = setTimeout(checkExpiration, timeLeft);
-    }
-}, { immediate: true });
-
-onMounted(() => {
-    updateCountdown();
-    intervalId.value = setInterval(updateCountdown, 1000);
-});
-
-onUnmounted(() => {
-    if (intervalId.value) {
-        clearInterval(intervalId.value);
-    }
-    if (expirationTimeout.value) {
-        clearTimeout(expirationTimeout.value);
-    }
-});
 </script>
 
 <template>

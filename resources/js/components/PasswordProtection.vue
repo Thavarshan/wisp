@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import InputError from '@/components/InputError.vue';
 import { Copy } from 'lucide-vue-next';
 import { computed, watch, nextTick } from 'vue';
 import { useToast } from '@/components/ui/toast';
@@ -10,8 +11,9 @@ import copy from 'copy-to-clipboard';
 import { generateSecurePassword } from '@/lib/utils';
 
 const props = defineProps<{
-    password?: string;       // Password value
-    enabled: boolean;       // Toggle state for password protection
+    password?: string;
+    enabled: boolean;
+    error?: string;
 }>();
 
 const emit = defineEmits(['update:password', 'update:enabled']);
@@ -43,15 +45,23 @@ function handleCopy() {
 
 watch(isEnabled, async (value) => {
     if (value && !passwordValue.value) {
-        await nextTick();  // Ensure the DOM and state are updated first
-        const generatedPassword = generateSecurePassword();
-        emit('update:password', generatedPassword);  // Emit the generated password
-        toast({
-            title: 'Generated!',
-            description: 'A secure password has been generated.',
-        });
+        await nextTick();
+        try {
+            const generatedPassword = generateSecurePassword();
+            emit('update:password', generatedPassword);
+            toast({
+                title: 'Generated!',
+                description: 'A secure password has been generated.',
+            });
+        } catch {
+            toast({
+                title: 'Error',
+                description: 'Failed to generate secure password. Please enter manually.',
+                variant: 'destructive',
+            });
+        }
     } else if (!value) {
-        emit('update:password', '');  // Clear password if disabled
+        emit('update:password', '');
     }
 });
 
@@ -90,10 +100,7 @@ watch(isEnabled, async (value) => {
                     <Copy class="size-4" />
                 </Button>
             </div>
-
-            <div>
-
-            </div>
+            <InputError v-if="error" :message="error" />
         </div>
     </div>
 </template>
