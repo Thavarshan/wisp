@@ -10,16 +10,13 @@ Wisp is a secure and straightforward application for sharing encrypted, one-time
 *Figure 1: Homepage - Create a new secret*
 
 ![Wisp Screenshot 2](public/images/2.png)
-*Figure 2: Secret creation form with options*
+*Figure 2: Generated secure link display*
 
 ![Wisp Screenshot 3](public/images/3.png)
-*Figure 3: Generated secure link display*
+*Figure 3: Password-protected secret access*
 
 ![Wisp Screenshot 4](public/images/4.png)
-*Figure 4: Password-protected secret access*
-
-![Wisp Screenshot 5](public/images/5.png)
-*Figure 5: Secret content display*
+*Figure 4: Secret content display*
 
 ## Table of Contents
 

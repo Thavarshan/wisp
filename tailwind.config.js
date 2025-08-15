@@ -14,6 +14,13 @@ export default {
             fontFamily: {
                 sans: ['Inter', ...defaultTheme.fontFamily.sans],
             },
+            animation: {
+                'pulse-slow': 'pulse 4s ease-in-out infinite',
+            },
+            animationDelay: {
+                '2000': '2s',
+                '4000': '4s',
+            },
             borderRadius: {
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
@@ -73,5 +80,18 @@ export default {
             },
         },
     },
-    plugins: [require('tailwindcss-animate')],
+    plugins: [
+        require('tailwindcss-animate'),
+        function({ addUtilities }) {
+            const newUtilities = {
+                '.animation-delay-2000': {
+                    'animation-delay': '2s',
+                },
+                '.animation-delay-4000': {
+                    'animation-delay': '4s',
+                },
+            };
+            addUtilities(newUtilities);
+        }
+    ],
 };

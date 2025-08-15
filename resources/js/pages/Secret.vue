@@ -82,7 +82,7 @@ async function obliterateSecret(callback?: () => void): Promise<void> {
     <Head title="One Time Secrets" />
     <div class="flex min-h-screen flex-col items-center lg:justify-center p-4 md:p-8 w-full">
         <div class="w-full max-w-2xl">
-            <Card class="shadow-xl">
+            <Card glassBorder class="shadow-xl">
                 <CardHeader>
                     <AppLogo href="/" classes="h-12 mx-auto" title="Wisp" />
                 </CardHeader>
