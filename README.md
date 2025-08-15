@@ -4,8 +4,26 @@
 
 Wisp is a secure and straightforward application for sharing encrypted, one-time secrets through a protected link that automatically expires. Once a secret is viewed or reaches its expiration time, it is permanently deleted. For added security, users can set an optional password.
 
+## Screenshots
+
+![Wisp Screenshot 1](public/images/1.png)
+*Figure 1: Homepage - Create a new secret*
+
+![Wisp Screenshot 2](public/images/2.png)
+*Figure 2: Secret creation form with options*
+
+![Wisp Screenshot 3](public/images/3.png)
+*Figure 3: Generated secure link display*
+
+![Wisp Screenshot 4](public/images/4.png)
+*Figure 4: Password-protected secret access*
+
+![Wisp Screenshot 5](public/images/5.png)
+*Figure 5: Secret content display*
+
 ## Table of Contents
 
+- [Screenshots](#screenshots)
 - [Table of Contents](#table-of-contents)
 - [Features](#features)
 - [Technologies Used](#technologies-used)
@@ -19,6 +37,7 @@ Wisp is a secure and straightforward application for sharing encrypted, one-time
 - [Testing](#testing)
   - [Run Feature Tests](#run-feature-tests)
   - [Run Frontend Tests](#run-frontend-tests)
+  - [Run End-to-End Tests (Nightwatch)](#run-end-to-end-tests-nightwatch)
 - [Project Structure](#project-structure)
 - [Security Considerations](#security-considerations)
 - [Contributing](#contributing)
@@ -26,20 +45,25 @@ Wisp is a secure and straightforward application for sharing encrypted, one-time
 
 ## Features
 
-- Share encrypted, one-time secrets via secure links.
-- Optional password protection for shared secrets.
-- Automatic expiration and deletion of secrets after a single view or expiration time.
-- Customizable expiration times ranging from minutes to days.
-- User-friendly interface for creating and accessing secrets.
-- Secure handling of passwords using hashing and encryption.
-- Destruction of secrets upon viewing or manual obliteration.
+- **Secure Secret Sharing:** Share encrypted, one-time secrets via secure links
+- **Password Protection:** Optional password protection for shared secrets
+- **Auto-Expiration:** Automatic expiration and deletion of secrets after a single view or expiration time
+- **Flexible Timeouts:** Customizable expiration times ranging from minutes to days
+- **Modern UI:** User-friendly interface built with Vue 3 and Tailwind CSS
+- **Real-time Updates:** Seamless single-page application experience with Inertia.js
+- **Secure Backend:** Laravel encryption and hashing for maximum security
+- **One-Time Access:** Secrets are permanently destroyed after viewing or manual obliteration
+- **Type Safety:** Full TypeScript support for enhanced development experience
 
 ## Technologies Used
 
-- **Backend:** Laravel 12, PHP 8.4
-- **Frontend:** Vue 3, Inertia.js, TypeScript
-- **Database:** PostgreSQL
-- **Styling:** Tailwind CSS, shadcn/ui components
+- **Backend:** Laravel 12.21, PHP 8.4
+- **Frontend:** Vue 3.5, Inertia.js 2.0, TypeScript
+- **Database:** MySQL
+- **Styling:** Tailwind CSS 3.4, shadcn/ui components
+- **Routing:** Ziggy (Laravel route helpers for JavaScript)
+- **Code Quality:** Laravel Pint (PHP code style fixer)
+- **Testing:** PHPUnit, Laravel Nightwatch (E2E testing)
 - **Security:** Laravel Encryption, Hashing, HTTPS
 - **Hosting:** Heroku
 - **JavaScript Runtime:** NodeJS v22
@@ -49,7 +73,7 @@ Wisp is a secure and straightforward application for sharing encrypted, one-time
 - PHP 8.4 or higher
 - Composer
 - Node.js v22 and npm
-- PostgreSQL
+- MySQL 8.0+ or MariaDB 10.3+
 - OpenSSL for encryption
 - Nginx or Apache server
 
@@ -80,6 +104,12 @@ Wisp is a secure and straightforward application for sharing encrypted, one-time
    npm run build
    ```
 
+5. **For development, you can run the dev server:**
+
+   ```bash
+   npm run dev
+   ```
+
 ## Configuration
 
 1. **Copy `.env` file:**
@@ -90,10 +120,10 @@ Wisp is a secure and straightforward application for sharing encrypted, one-time
 
 2. **Configure database in `.env`:**
 
-   ```
-   DB_CONNECTION=pgsql
+   ```env
+   DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
-   DB_PORT=5432
+   DB_PORT=3306
    DB_DATABASE=wisp
    DB_USERNAME=your_username
    DB_PASSWORD=your_password
@@ -107,7 +137,7 @@ Wisp is a secure and straightforward application for sharing encrypted, one-time
 
 4. **Configure encryption settings in `.env`:**
 
-   ```
+   ```env
    APP_KEY=base64:your_generated_key
    APP_CIPHER=AES-256-CBC
    ```
@@ -152,9 +182,15 @@ php artisan test
 npm run test
 ```
 
+### Run End-to-End Tests (Nightwatch)
+
+```bash
+npm run nightwatch
+```
+
 ## Project Structure
 
-```
+```text
 wisp/
 ├── app/
 │   ├── Http/
