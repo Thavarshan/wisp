@@ -1,12 +1,12 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "thavarshan/vault-0",
+    "name": "thavarshan/wisp",
     "type": "project",
-    "description": "Vault-0 is a secure Laravel-based application for sharing encrypted, one-time secrets via expiring protected links.",
+    "description": "Wisp is a secure Laravel-based application for sharing encrypted, one-time secrets via expiring protected links.",
     "keywords": [
         "laravel",
         "framework",
-        "vault-0",
+        "wisp",
         "secret-sharing",
         "encryption",
         "one-time-secret",

@@ -77,7 +77,7 @@ function handleSubmit() {
         <form @submit.prevent="handleSubmit" class="w-full max-w-2xl">
             <Card class="shadow-xl">
                 <CardHeader>
-                    <AppLogo href="/" classes="h-12 mx-auto" title="Vault-0" />
+                    <AppLogo href="/" classes="h-12 mx-auto" title="Wisp" />
                     <CardDescription class="mt-2 space-y-3 text-center">
                         <p class="text-accent-foreground text-normal sm:text-lg">Share a confidential, one-time secret through a secure link that automatically expires.</p>
                     </CardDescription>

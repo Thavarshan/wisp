@@ -1,8 +1,8 @@
-# Vault-0 - One-Time Secret Sharing Application
+# Wisp - One-Time Secret Sharing Application
 
 [![Laravel Forge Site Deployment Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fforge.laravel.com%2Fsite-badges%2Ff758f373-2892-47fc-9c7f-0060cd352199%3Fdate%3D1%26label%3D1%26commit%3D1&style=plastic)](https://forge.laravel.com/servers/946751/sites/2807781)
 
-Vault-0 is a secure and straightforward application for sharing encrypted, one-time secrets through a protected link that automatically expires. Once a secret is viewed or reaches its expiration time, it is permanently deleted. For added security, users can set an optional password.
+Wisp is a secure and straightforward application for sharing encrypted, one-time secrets through a protected link that automatically expires. Once a secret is viewed or reaches its expiration time, it is permanently deleted. For added security, users can set an optional password.
 
 ## Table of Contents
 
@@ -58,8 +58,8 @@ Vault-0 is a secure and straightforward application for sharing encrypted, one-t
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/Thavarshan/vault-0.git
-   cd vault-0
+   git clone https://github.com/Thavarshan/wisp.git
+   cd wisp
    ```
 
 2. **Install PHP dependencies:**
@@ -94,7 +94,7 @@ Vault-0 is a secure and straightforward application for sharing encrypted, one-t
    DB_CONNECTION=pgsql
    DB_HOST=127.0.0.1
    DB_PORT=5432
-   DB_DATABASE=vault-0
+   DB_DATABASE=wisp
    DB_USERNAME=your_username
    DB_PASSWORD=your_password
    ```
@@ -155,7 +155,7 @@ npm run test
 ## Project Structure
 
 ```
-vault-0/
+wisp/
 ├── app/
 │   ├── Http/
 │   │   ├── Controllers/
@@ -212,4 +212,4 @@ vault-0/
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-For any issues, please open an issue on GitHub. Thank you for using Vault-0!
+For any issues, please open an issue on GitHub. Thank you for using Wisp!
