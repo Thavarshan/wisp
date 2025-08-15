@@ -98,4 +98,4 @@ jobs:
     steps:
       - name: Deploy to Forge
         run: |
-          curl -X POST "https://forge.laravel.com/servers/946751/sites/2807781/deploy/http?token=WXr0pe9KumIG2VftDR1nhtpagkOpiBFh42sznII5"
+          curl -X POST "https://forge.laravel.com/servers/949765/sites/2817705/deploy/http?token=${{ secrets.FORGE_DEPLOY_TOKEN }}"
