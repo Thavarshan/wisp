@@ -35,11 +35,11 @@ return [
     'csp' => [
         'development' => [
             'default-src' => "'self'",
-            'script-src' => "'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* http://127.0.0.1:*",
-            'style-src' => "'self' 'unsafe-inline' http://localhost:* http://127.0.0.1:* https://fonts.bunny.net",
+            'script-src' => "'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* http://127.0.0.1:* http://wisp.test:* https://wisp.test:*",
+            'style-src' => "'self' 'unsafe-inline' http://localhost:* http://127.0.0.1:* http://wisp.test:* https://wisp.test:* https://fonts.bunny.net",
             'font-src' => "'self' https://fonts.bunny.net",
             'img-src' => "'self' data: blob:",
-            'connect-src' => "'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
+            'connect-src' => "'self' http://localhost:* http://127.0.0.1:* http://wisp.test:* https://wisp.test:* ws://localhost:* ws://127.0.0.1:* ws://wisp.test:* wss://wisp.test:*",
         ],
 
         'production' => [
