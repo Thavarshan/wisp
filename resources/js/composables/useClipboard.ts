@@ -1,23 +1,30 @@
-import copy from 'copy-to-clipboard';
-import { ref, readonly } from 'vue';
 import { useToast } from '@/components/ui/toast';
+import { readonly, ref } from 'vue';
 
 export function useClipboard() {
     const { toast } = useToast();
     const isCopying = ref(false);
 
-    async function copyToClipboard(text: string, options?: {
-        successTitle?: string;
-        successDescription?: string;
-        errorTitle?: string;
-        errorDescription?: string;
-    }) {
+    async function copyToClipboard(
+        text: string,
+        options?: {
+            successTitle?: string;
+            successDescription?: string;
+            errorTitle?: string;
+            errorDescription?: string;
+        },
+    ) {
         if (isCopying.value) return false;
 
         isCopying.value = true;
 
         try {
-            const success = copy(text);
+            if (!navigator.clipboard) {
+                throw new Error('Clipboard API unavailable');
+            }
+
+            await navigator.clipboard.writeText(text);
+            const success = true;
 
             if (success) {
                 toast({
@@ -43,6 +50,6 @@ export function useClipboard() {
 
     return {
         copyToClipboard,
-        isCopying: readonly(isCopying)
+        isCopying: readonly(isCopying),
     };
 }

@@ -1,6 +1,11 @@
 import { onMounted, ref } from 'vue';
 
 type Appearance = 'light' | 'dark' | 'system';
+const appearances: Appearance[] = ['light', 'dark', 'system'];
+
+function isAppearance(value: string | null): value is Appearance {
+    return value !== null && appearances.includes(value as Appearance);
+}
 
 export function updateTheme(value: Appearance) {
     if (typeof window === 'undefined') {
@@ -40,7 +45,8 @@ const getStoredAppearance = () => {
         return null;
     }
 
-    return localStorage.getItem('appearance') as Appearance | null;
+    const value = localStorage.getItem('appearance');
+    return isAppearance(value) ? value : null;
 };
 
 const handleSystemThemeChange = () => {
@@ -68,7 +74,7 @@ export function useAppearance() {
     onMounted(() => {
         initializeTheme();
 
-        const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
+        const savedAppearance = getStoredAppearance();
 
         if (savedAppearance) {
             appearance.value = savedAppearance;
@@ -76,6 +82,7 @@ export function useAppearance() {
     });
 
     function updateAppearance(value: Appearance) {
+        if (!appearances.includes(value)) return;
         appearance.value = value;
 
         // Store in localStorage for client-side persistence...

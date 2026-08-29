@@ -1,32 +1,34 @@
-import { ref, computed, onMounted, onUnmounted, watch, readonly } from 'vue';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import duration from 'dayjs/plugin/duration';
-
-dayjs.extend(relativeTime);
-dayjs.extend(duration);
+import { computed, onMounted, onUnmounted, readonly, ref } from 'vue';
 
 export function useSecretTimer(expiredAt: string, onExpired?: () => void) {
     const countdown = ref('');
-    const intervalId = ref<number | undefined>(undefined);
-    const expirationTimeout = ref<number | null>(null);
+    let intervalId: number | undefined;
+    let expirationTimeout: number | undefined;
+    let expiredCallbackCalled = false;
 
-    const expirationTime = computed(() => dayjs(expiredAt));
-    const isExpired = computed(() => expirationTime.value.isBefore(dayjs()));
+    const expirationTime = computed(() => new Date(expiredAt).getTime());
+    const isExpired = ref(false);
 
     function updateCountdown() {
-        const now = dayjs();
-        const timeLeft = expirationTime.value.diff(now);
+        const timeLeft = expirationTime.value - Date.now();
 
         if (timeLeft <= 0) {
             countdown.value = 'Expired';
-            clearInterval(intervalId.value);
-            onExpired?.();
+            isExpired.value = true;
+            if (intervalId !== undefined) {
+                clearInterval(intervalId);
+                intervalId = undefined;
+            }
+            if (!expiredCallbackCalled) {
+                expiredCallbackCalled = true;
+                onExpired?.();
+            }
         } else {
-            const durationLeft = dayjs.duration(timeLeft);
-            const hours = durationLeft.hours();
-            const minutes = durationLeft.minutes();
-            const seconds = durationLeft.seconds();
+            const totalSeconds = Math.floor(timeLeft / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            isExpired.value = false;
 
             if (hours > 0) {
                 countdown.value = `${hours}h ${minutes}m ${seconds}s`;
@@ -37,40 +39,36 @@ export function useSecretTimer(expiredAt: string, onExpired?: () => void) {
     }
 
     function setupExpirationTimeout() {
-        if (expirationTimeout.value) {
-            clearTimeout(expirationTimeout.value);
+        if (expirationTimeout !== undefined) {
+            clearTimeout(expirationTimeout);
         }
 
-        const now = dayjs();
-        const timeLeft = expirationTime.value.diff(now);
+        const timeLeft = expirationTime.value - Date.now();
 
         if (timeLeft > 0) {
-            expirationTimeout.value = setTimeout(() => onExpired?.(), timeLeft);
+            expirationTimeout = window.setTimeout(updateCountdown, timeLeft);
         }
     }
 
     function startTimer() {
+        stopTimer();
         updateCountdown();
-        intervalId.value = setInterval(updateCountdown, 1000);
+        if (!isExpired.value) {
+            intervalId = window.setInterval(updateCountdown, 1000);
+        }
         setupExpirationTimeout();
     }
 
     function stopTimer() {
-        if (intervalId.value) {
-            clearInterval(intervalId.value);
-            intervalId.value = undefined;
+        if (intervalId !== undefined) {
+            clearInterval(intervalId);
+            intervalId = undefined;
         }
-        if (expirationTimeout.value) {
-            clearTimeout(expirationTimeout.value);
-            expirationTimeout.value = null;
+        if (expirationTimeout !== undefined) {
+            clearTimeout(expirationTimeout);
+            expirationTimeout = undefined;
         }
     }
-
-    // Watch for changes in expiration time
-    watch(() => expiredAt, () => {
-        stopTimer();
-        startTimer();
-    }, { immediate: true });
 
     onMounted(startTimer);
     onUnmounted(stopTimer);
@@ -80,6 +78,6 @@ export function useSecretTimer(expiredAt: string, onExpired?: () => void) {
         isExpired: readonly(isExpired),
         expirationTime: readonly(expirationTime),
         startTimer,
-        stopTimer
+        stopTimer,
     };
 }

@@ -1,86 +1,90 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { Toaster } from '@/components/ui/toast';
-import { getUidFromRoute } from '@/lib/utils';
 import AppLogo from '@/components/AppLogo.vue';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Copy, Eye } from 'lucide-vue-next';
-import SecretContentInput from '@/components/SecretContentInput.vue';
 import InputError from '@/components/InputError.vue';
-
-// Composables
-import { useSecretTimer } from '@/composables/useSecretTimer';
+import SecretContentInput from '@/components/SecretContentInput.vue';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { useClipboard } from '@/composables/useClipboard';
-import { useSecretActions } from '@/composables/useSecretActions';
+import { useSecretTimer } from '@/composables/useSecretTimer';
+import { Head } from '@inertiajs/vue3';
+import { AlertCircle, Check, Copy, Eye, Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const props = defineProps<{
-    secret: string;
+    token: string;
     has_password: boolean;
     expired_at: string;
 }>();
 
+const password = ref('');
+const content = ref('');
+const error = ref('');
 const revealed = ref(false);
-const form = useForm<{ password: string; }>({ password: '' });
-const uid = getUidFromRoute();
-
-// Initialize composables
-const { countdown } = useSecretTimer(props.expired_at, () => {
-    window.location.reload();
-});
-
+const cleared = ref(false);
+const isRevealing = ref(false);
+const expired = ref(false);
 const { copyToClipboard } = useClipboard();
-const { deleteSecret } = useSecretActions();
-
-const content = computed({
-    get: () => (revealed.value ? props.secret : ''),
-    set: () => '' // Read-only
+const { countdown } = useSecretTimer(props.expired_at, () => {
+    expired.value = true;
 });
 
-// Function to copy secret to clipboard
-function handleCopy() {
-    copyToClipboard(props.secret);
+function csrfToken(): string {
+    return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
 }
 
-// Function to reveal the secret
-function handleRevealSecret() {
-    if (props.has_password) {
-        form.post(route('secrets.password', { secret: uid }), {
-            preserveScroll: true,
-            onSuccess: () => {
-                obliterateSecret(() => revealed.value = true);
-            }
+async function revealSecret() {
+    if (isRevealing.value || expired.value || revealed.value) return;
+
+    isRevealing.value = true;
+    error.value = '';
+
+    try {
+        const response = await fetch(route('secrets.reveal', { token: props.token }), {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken(),
+            },
+            body: JSON.stringify({ password: props.has_password ? password.value : null }),
         });
-        return;
-    }
+        const payload = await response.json();
 
-    obliterateSecret(() => revealed.value = true);
+        if (response.status === 422) {
+            error.value = payload.errors?.password?.[0] ?? 'The provided password is incorrect.';
+            return;
+        }
+
+        if (response.status === 410) {
+            expired.value = true;
+            error.value = 'This secret has expired.';
+            return;
+        }
+
+        if (!response.ok) throw new Error(payload.message ?? 'Unable to reveal this secret.');
+
+        content.value = payload.content;
+        revealed.value = true;
+    } catch (caught) {
+        error.value = caught instanceof Error ? caught.message : 'Unable to reveal this secret.';
+    } finally {
+        password.value = '';
+        isRevealing.value = false;
+    }
 }
 
-// Function to delete the secret after revealing
-async function obliterateSecret(callback?: () => void): Promise<void> {
-    if (!uid) return;
-
-    const success = await deleteSecret(uid);
-
-    if (success && callback) {
-        callback();
-    } else if (!success) {
-        // If deletion failed, still allow revealing but show error
-        if (callback) callback();
-    }
+function clearSecret() {
+    content.value = '';
+    cleared.value = true;
 }
 </script>
 
 <template>
-    <Toaster />
-    <Head title="One Time Secrets" />
-    <div class="flex min-h-screen flex-col items-center lg:justify-center p-4 md:p-8 w-full">
+    <Head title="Reveal secret" />
+    <div class="flex min-h-screen w-full flex-col items-center justify-center p-4 md:p-8">
         <div class="w-full max-w-2xl">
             <Card glassBorder class="shadow-xl">
                 <CardHeader>
@@ -88,54 +92,51 @@ async function obliterateSecret(callback?: () => void): Promise<void> {
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <div class="flex items-center justify-center">
-                        <Badge v-if="countdown !== 'Expired'">
-                            Expires in {{ countdown }}
-                        </Badge>
-                        <Badge v-else variant="destructive">
-                            Secret has expired
-                        </Badge>
+                        <Badge v-if="!expired">Expires in {{ countdown }}</Badge>
+                        <Badge v-else variant="destructive">Secret has expired</Badge>
                     </div>
-                    <Alert v-if="revealed" variant="destructive">
-                        <AlertCircle class="w-4 h-4" />
-                        <AlertTitle>This secret has been obliterated.</AlertTitle>
-                        <AlertDescription>
-                            Please be sure to store it in a safe place before closing this page.
-                        </AlertDescription>
+
+                    <Alert v-if="revealed && !cleared" variant="destructive">
+                        <AlertCircle class="h-4 w-4" />
+                        <AlertTitle>This secret has been consumed.</AlertTitle>
+                        <AlertDescription>Keep a copy only if you are authorized to do so.</AlertDescription>
                     </Alert>
-                    <div v-if="!revealed && props.has_password">
-                        <Label for="password">Password</Label>
+                    <Alert v-if="cleared">
+                        <Check class="h-4 w-4" />
+                        <AlertTitle>Plaintext cleared from this page.</AlertTitle>
+                    </Alert>
+
+                    <div v-if="!revealed" class="space-y-2">
+                        <label v-if="has_password" for="password" class="text-sm font-medium">Password</label>
                         <Input
+                            v-if="has_password"
                             id="password"
+                            v-model="password"
                             type="password"
-                            required
-                            :tabindex="2"
-                            v-model="form.password"
+                            autocomplete="off"
                             placeholder="Password"
+                            @keyup.enter="revealSecret"
                         />
-                        <InputError :message="form.errors.password" />
+                        <InputError :message="error" />
                     </div>
-                    <SecretContentInput v-show="revealed" v-model="content" />
+                    <InputError v-else :message="error" />
+                    <SecretContentInput v-if="revealed && !cleared" v-model="content" />
                 </CardContent>
-                <CardFooter>
+                <CardFooter class="gap-2">
                     <Button
                         v-if="!revealed"
                         type="button"
-                        @click="handleRevealSecret"
                         class="w-full"
                         size="lg"
-                        :disabled="props.has_password && !form.password"
+                        :disabled="isRevealing || expired || (has_password && !password)"
+                        @click="revealSecret"
                     >
-                        <Eye class="size-4 mr-1" /> Reveal secret
+                        <Eye class="mr-1 size-4" /> {{ isRevealing ? 'Revealing…' : 'Reveal secret' }}
                     </Button>
-                    <Button
-                        v-else
-                        type="button"
-                        @click="handleCopy"
-                        class="w-full"
-                        size="lg"
-                    >
-                        <Copy class="size-4 mr-1" /> Copy secret
-                    </Button>
+                    <template v-else-if="!cleared">
+                        <Button type="button" class="flex-1" size="lg" @click="copyToClipboard(content)"><Copy class="mr-1 size-4" /> Copy</Button>
+                        <Button type="button" variant="outline" size="lg" @click="clearSecret"><Trash2 class="mr-1 size-4" /> Clear</Button>
+                    </template>
                 </CardFooter>
             </Card>
         </div>

@@ -3,11 +3,10 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "build:ssr": "vite build && vite build --ssr",
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
-        "lint": "eslint . --fix"
+        "lint": "eslint ."
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
@@ -23,7 +22,6 @@
         "vue-tsc": "^2.2.4"
     },
     "dependencies": {
-        "@headlessui/vue": "^1.7.23",
         "@inertiajs/vue3": "^2.0.0-beta.3",
         "@vitejs/plugin-vue": "^5.2.1",
         "@vueuse/core": "^12.8.2",
@@ -31,12 +29,8 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "concurrently": "^9.0.1",
-        "copy-to-clipboard": "^3.3.3",
-        "dayjs": "^1.11.13",
         "laravel-vite-plugin": "^1.0",
-        "lucide": "^0.468.0",
         "lucide-vue-next": "^0.468.0",
-        "radix-vue": "^1.9.11",
         "reka-ui": "^2.0.2",
         "tailwind-merge": "^2.6.0",
         "tailwindcss": "^3.4.1",
@@ -45,6 +39,9 @@
         "vite": "^6.2.0",
         "vue": "^3.5.13",
         "ziggy-js": "^2.4.2"
+    },
+    "overrides": {
+        "brace-expansion": "^2.1.4"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.9.5",
