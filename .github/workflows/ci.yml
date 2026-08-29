@@ -30,6 +30,12 @@ jobs:
       - run: npm run lint
       - run: npx vue-tsc --noEmit
       - run: npm run build
+      - name: Upload built frontend assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: vite-build
+          path: public/build
+          if-no-files-found: error
 
   tests:
     name: PHPUnit
@@ -44,4 +50,9 @@ jobs:
       - run: composer install --no-interaction --no-progress --prefer-dist
       - run: cp .env.example .env
       - run: php artisan key:generate --force
+      - name: Download built frontend assets
+        uses: actions/download-artifact@v4
+        with:
+          name: vite-build
+          path: public/build
       - run: php artisan test --compact
