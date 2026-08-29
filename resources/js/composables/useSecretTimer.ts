@@ -19,6 +19,10 @@ export function useSecretTimer(expiredAt: string, onExpired?: () => void) {
                 clearInterval(intervalId);
                 intervalId = undefined;
             }
+            if (expirationTimeout !== undefined) {
+                clearTimeout(expirationTimeout);
+                expirationTimeout = undefined;
+            }
             if (!expiredCallbackCalled) {
                 expiredCallbackCalled = true;
                 onExpired?.();
