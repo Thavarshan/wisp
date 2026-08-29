@@ -1,33 +1,24 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 
-const expirationOptions = {
-    '5 mins': '5m',
-    '30 mins': '30m',
-    '1 hour': '1h',
-    '6 hours': '6h',
-    '12 hours': '12h',
-    '1 day': '1d',
-};
-
-defineProps<{ modelValue: string; }>();
-defineEmits(['update:modelValue']);
+defineProps<{ modelValue: string; options: Array<{ value: string; label: string }> }>();
+defineEmits<{ 'update:modelValue': [value: string] }>();
 </script>
 
 <template>
-    <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
         <Button
-            v-for="(value, label) in expirationOptions"
+            v-for="option in options"
             type="button"
-            :key="value"
-            @click="$emit('update:modelValue', value)"
+            :key="option.value"
+            @click="$emit('update:modelValue', option.value)"
             :class="{
-                'bg-primary text-primary-foreground': modelValue === value,
-                'bg-muted text-accent-foreground': modelValue !== value
+                'bg-primary text-primary-foreground': modelValue === option.value,
+                'bg-muted text-accent-foreground': modelValue !== option.value,
             }"
             class="w-full transition-colors hover:text-white dark:hover:text-accent-foreground"
         >
-            {{ label }}
+            {{ option.label }}
         </Button>
     </div>
 </template>

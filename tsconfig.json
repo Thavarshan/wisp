@@ -21,7 +21,6 @@
         },
         "types": [
             "vite/client",
-            "vue/tsx",
             "./resources/js/types"
         ],
         "resolveJsonModule": true,

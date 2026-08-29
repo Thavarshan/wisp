@@ -31,6 +31,12 @@ class SecurityHeaders
 
         $response->headers->set('Content-Security-Policy', $csp);
 
+        if ($request->is('secrets/*')) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('X-Robots-Tag', 'noindex, noarchive');
+        }
+
         // HSTS header (production only with HTTPS)
         if (app()->isProduction() && $request->isSecure()) {
             $hsts = 'max-age='.config('security.hsts.max_age');

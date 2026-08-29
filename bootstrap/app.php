@@ -1,10 +1,8 @@
 <?php
 
-use App\Console\Commands\ClearExpiredSecrets;
-use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
-use App\Http\Middleware\SecureSecret;
 use App\Http\Middleware\SecurityHeaders;
+use App\Models\Secret;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,23 +15,32 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->encryptCookies(except: ['appearance']);
+        // Middleware is configured before the config repository is booted.
+        $middleware->trustProxies(at: env('TRUSTED_PROXIES'));
+        $middleware->encryptCookies();
 
         $middleware->web(append: [
-            HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            // SecurityHeaders::class,
+            SecurityHeaders::class,
         ]);
 
-        $middleware->alias([
-            'secure.secret' => SecureSecret::class,
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->respond(function ($response) {
+            if (request()->is('secrets/*')) {
+                $response->headers->set('Cache-Control', 'no-store, private');
+                $response->headers->set('Pragma', 'no-cache');
+                $response->headers->set('X-Robots-Tag', 'noindex, noarchive');
+            }
+
+            return $response;
+        });
     })
     ->withSchedule(function ($schedule) {
-        $schedule->command(ClearExpiredSecrets::class)->daily();
+        $schedule->command('model:prune', ['--model' => [Secret::class]])
+            ->hourly()
+            ->withoutOverlapping()
+            ->onOneServer();
     })
     ->create();
