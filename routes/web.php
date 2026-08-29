@@ -1,27 +1,28 @@
 <?php
 
+use App\Enums\ExpirationOption;
 use App\Http\Controllers\SecretController;
-use App\Http\Controllers\ShareSecretController;
-use App\Http\Controllers\ValidateSecretPasswordController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    return Inertia::render('Welcome', [
+        'expiration_options' => ExpirationOption::options(),
+    ]);
 })->name('home');
 
-Route::resource('secrets', SecretController::class)
-    ->only(['store', 'show'])
-    ->middleware('throttle:60,1'); // Limit to 60 requests per minute per IP
+Route::post('secrets', [SecretController::class, 'store'])
+    ->name('secrets.store')
+    ->middleware('throttle:secret-creation');
 
-Route::delete('secrets/{secret}', [SecretController::class, 'destroy'])
-    ->name('secrets.destroy')
-    ->middleware('throttle:30,1'); // Limit deletions to 30 per minute
+Route::get('secrets/{token}', [SecretController::class, 'show'])
+    ->name('secrets.show')
+    ->middleware('throttle:secret-access');
 
-Route::get('share', ShareSecretController::class)
-    ->middleware(['secure.secret', 'throttle:120,1'])
-    ->name('secrets.share');
+Route::post('secrets/{token}/reveal', [SecretController::class, 'reveal'])
+    ->name('secrets.reveal')
+    ->middleware(['throttle:secret-reveal-ip', 'throttle:secret-reveal-secret']);
 
-Route::post('secrets/{secret}/password', ValidateSecretPasswordController::class)
-    ->middleware(['secure.secret', 'throttle:10,1']) // More restrictive for password attempts
-    ->name('secrets.password');
+Route::delete('secrets/{token}', [SecretController::class, 'revoke'])
+    ->name('secrets.revoke')
+    ->middleware('throttle:secret-revocation');

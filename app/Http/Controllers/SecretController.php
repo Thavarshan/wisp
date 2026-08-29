@@ -2,70 +2,54 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateSecret;
+use App\Actions\RevealSecret;
+use App\Actions\RevokeSecret;
+use App\Http\Requests\RevealSecretRequest;
+use App\Http\Requests\RevokeSecretRequest;
 use App\Http\Requests\StoreSecretRequest;
 use App\Models\Secret;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-class SecretController extends Controller implements HasMiddleware
+class SecretController extends Controller
 {
-    /**
-     * Get the middleware that should be assigned to the controller.
-     */
-    public static function middleware(): array
+    public function store(StoreSecretRequest $request, CreateSecret $createSecret): JsonResponse
     {
-        return [
-            new Middleware('secure.secret', only: ['show']),
-        ];
+        $result = $createSecret->handle($request->validated());
+
+        return response()->json($result, Response::HTTP_CREATED)
+            ->withHeaders(['Cache-Control' => 'no-store', 'X-Robots-Tag' => 'noindex, noarchive']);
     }
 
-    /**
-     * Store a newly created secret.
-     */
-    public function store(StoreSecretRequest $request): RedirectResponse
+    public function show(string $token): InertiaResponse
     {
-        $secret = Secret::create($request->getValidatedData());
+        $secret = Secret::query()->withAccessToken($token)->first();
 
-        return redirect()->route('secrets.share', ['secret' => $secret->uid]);
-    }
-
-    /**
-     * Display the specified secret.
-     */
-    public function show(Secret $secret): InertiaResponse|Response
-    {
-        Gate::authorize('view', $secret);
+        abort_unless($secret, 404);
+        abort_if($secret->hasExpired(), 410, 'Secret has expired.');
 
         return Inertia::render('Secret', [
-            'secret' => Crypt::decrypt($secret->content),
+            'token' => $token,
             'has_password' => $secret->hasPassword(),
-            'expired_at' => $secret->expired_at,
+            'expired_at' => $secret->expired_at->toIso8601String(),
         ]);
     }
 
-    /**
-     * Destroy the specified secret.
-     */
-    public function destroy(
-        Request $request,
-        Secret $secret
-    ): RedirectResponse|Response {
-        // Check authorization
-        Gate::authorize('delete', $secret);
+    public function reveal(RevealSecretRequest $request, RevealSecret $revealSecret, string $token): JsonResponse
+    {
+        $content = $revealSecret->handle($token, $request->validated('password'));
 
-        // Delete the secret
-        $secret->delete();
+        return response()->json(['content' => $content])
+            ->withHeaders(['Cache-Control' => 'no-store', 'Pragma' => 'no-cache', 'X-Robots-Tag' => 'noindex, noarchive']);
+    }
 
-        // Return appropriate response based on request type
-        return $request->wantsJson()
-            ? response()->noContent()
-            : redirect()->route('home');
+    public function revoke(RevokeSecretRequest $request, RevokeSecret $revokeSecret, string $token): Response
+    {
+        $revokeSecret->handle($token, $request->validated('revocation_token'));
+
+        return response()->noContent()->withHeaders(['Cache-Control' => 'no-store']);
     }
 }

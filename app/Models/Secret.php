@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use App\Observers\SecretObserver;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Database\Factories\SecretFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 
-#[ObservedBy(SecretObserver::class)]
 class Secret extends Model
 {
-    /** @use HasFactory<\Database\Factories\SecretFactory> */
-    use HasFactory;
+    /** @use HasFactory<SecretFactory> */
+    use HasFactory, MassPrunable;
 
     /**
      * The attributes that are mass assignable.
@@ -19,8 +19,8 @@ class Secret extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'uid',
-        'name',
+        'access_token_hash',
+        'revocation_token_hash',
         'content',
         'password',
         'expired_at',
@@ -32,39 +32,20 @@ class Secret extends Model
      * @var array<string>
      */
     protected $hidden = [
+        'access_token_hash',
+        'revocation_token_hash',
+        'content',
         'password',
     ];
 
-    /**
-     * Find a secret by its UID.
-     */
-    public static function findByUid(string $uid): ?self
+    public function scopeWithAccessToken(Builder $query, string $token): Builder
     {
-        return self::where('uid', $uid)->first();
+        return $query->where('access_token_hash', self::hashToken($token));
     }
 
-    /**
-     * Determine if the secret is available.
-     */
-    public static function isAvailable(string $uid): bool
+    public static function hashToken(string $token): string
     {
-        return self::where('uid', $uid)->exists();
-    }
-
-    /**
-     * Get the route key for the model.
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'uid';
-    }
-
-    /**
-     * Get the share link for the secret.
-     */
-    public function getShareLink(): string
-    {
-        return route('secrets.show', $this);
+        return hash('sha256', $token);
     }
 
     /**
@@ -72,7 +53,7 @@ class Secret extends Model
      */
     public function hasExpired(): bool
     {
-        return $this->expired_at && $this->expired_at->isPast();
+        return $this->expired_at->isPast();
     }
 
     /**
@@ -80,7 +61,12 @@ class Secret extends Model
      */
     public function hasPassword(): bool
     {
-        return ! blank($this->password);
+        return filled($this->password);
+    }
+
+    public function prunable(): Builder
+    {
+        return static::query()->where('expired_at', '<=', now());
     }
 
     /**
@@ -91,6 +77,8 @@ class Secret extends Model
     protected function casts(): array
     {
         return [
+            'content' => 'encrypted',
+            'password' => 'hashed',
             'expired_at' => 'datetime',
         ];
     }
