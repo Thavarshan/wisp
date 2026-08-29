@@ -1,101 +1,47 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
   push:
-    branches:
-      - development
-      - main
+    branches: [development, main]
   pull_request:
-    branches:
-      - development
-      - main
+    branches: [development, main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  lint:
-    name: Code Quality
+  quality:
+    name: PHP and frontend quality
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: |
-          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-          npm install
-
-      - name: Run Pint
-        run: vendor/bin/pint
-
-      - name: Format Frontend
-        run: npm run format
-
-      - name: Lint Frontend
-        run: npm run lint
-
-  test:
-    name: Tests
-    runs-on: ubuntu-latest
-    needs: lint
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.4
           tools: composer:v2
-          coverage: xdebug
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: npm
+      - run: composer install --no-interaction --no-progress --prefer-dist --no-scripts
+      - run: npm ci
+      - run: vendor/bin/pint --test
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npx vue-tsc --noEmit
+      - run: npm run build
 
-      - name: Install Node Dependencies
-        run: npm ci
-
-      - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Copy Environment File
-        run: cp .env.example .env
-
-      - name: Generate Application Key
-        run: php artisan key:generate
-
-      - name: Publish Ziggy Configuration
-        run: php artisan ziggy:generate
-
-      - name: Build Assets
-        run: npm run build
-
-      - name: Tests
-        run: ./vendor/bin/phpunit
-
-  deploy:
-    name: Deploy to Laravel Forge
+  tests:
+    name: PHPUnit
     runs-on: ubuntu-latest
-    needs: [lint, test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
+    needs: quality
     steps:
-      - name: Deploy to Forge
-        run: |
-          curl -X POST "https://forge.laravel.com/servers/949765/sites/2817705/deploy/http?token=${{ secrets.FORGE_DEPLOY_TOKEN }}"
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: cp .env.example .env
+      - run: php artisan key:generate --force
+      - run: php artisan test --compact
