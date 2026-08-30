@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Str;
-
 return [
 
     /*
@@ -103,6 +101,18 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+    'prefix' => env('CACHE_PREFIX', 'wisp_cache_'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | Wisp stores no PHP objects in cache. Disabling cache object
+    | unserialization prevents gadget-chain attacks if APP_KEY is leaked.
+    |
+    */
+
+    'serializable_classes' => false,
 
 ];

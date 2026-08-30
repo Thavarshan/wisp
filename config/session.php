@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Str;
-
 return [
 
     /*
@@ -129,7 +127,7 @@ return [
 
     'cookie' => env(
         'SESSION_COOKIE',
-        Str::slug(env('APP_NAME', 'laravel'), '_').'_session'
+        'wisp_session'
     ),
 
     /*
@@ -213,5 +211,17 @@ return [
     */
 
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Session Serialization
+    |--------------------------------------------------------------------------
+    |
+    | Session data is JSON-compatible in Wisp. JSON serialization avoids PHP
+    | object deserialization and invalidates sessions created with PHP format.
+    |
+    */
+
+    'serialization' => 'json',
 
 ];

@@ -11,6 +11,7 @@ use App\Http\Requests\StoreSecretRequest;
 use App\Models\Secret;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Middleware;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +23,7 @@ class SecretController extends Controller
      *
      * @return JsonResponse The secret credentials with no-store headers.
      */
+    #[Middleware('throttle:secret-creation')]
     public function store(
         StoreSecretRequest $request,
         CreateSecret $createSecret,
@@ -41,6 +43,7 @@ class SecretController extends Controller
      *
      * @return InertiaResponse|JsonResponse The reveal page or error response.
      */
+    #[Middleware('throttle:secret-access')]
     public function show(
         Request $request,
         string $token,
@@ -92,6 +95,8 @@ class SecretController extends Controller
      *
      * @return JsonResponse The decrypted content with no-store headers.
      */
+    #[Middleware('throttle:secret-reveal-ip')]
+    #[Middleware('throttle:secret-reveal-secret')]
     public function reveal(
         RevealSecretRequest $request,
         RevealSecret $revealSecret,
@@ -115,6 +120,7 @@ class SecretController extends Controller
      *
      * @return Response An empty no-content response.
      */
+    #[Middleware('throttle:secret-revocation')]
     public function revoke(
         RevokeSecretRequest $request,
         RevokeSecret $revokeSecret,

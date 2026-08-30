@@ -12,17 +12,13 @@ Route::get('/', function () {
 })->name('home');
 
 Route::post('secrets', [SecretController::class, 'store'])
-    ->name('secrets.store')
-    ->middleware('throttle:secret-creation');
+    ->name('secrets.store');
 
 Route::get('secrets/{token}', [SecretController::class, 'show'])
-    ->name('secrets.show')
-    ->middleware('throttle:secret-access');
+    ->name('secrets.show');
 
 Route::post('secrets/{token}/reveal', [SecretController::class, 'reveal'])
-    ->name('secrets.reveal')
-    ->middleware(['throttle:secret-reveal-ip', 'throttle:secret-reveal-secret']);
+    ->name('secrets.reveal');
 
 Route::delete('secrets/{token}', [SecretController::class, 'revoke'])
-    ->name('secrets.revoke')
-    ->middleware('throttle:secret-revocation');
+    ->name('secrets.revoke');

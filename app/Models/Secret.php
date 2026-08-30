@@ -3,11 +3,27 @@
 namespace App\Models;
 
 use Database\Factories\SecretFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 
+#[Fillable([
+    'access_token_hash',
+    'revocation_token_hash',
+    'content',
+    'password',
+    'expired_at',
+])]
+#[Hidden([
+    'access_token_hash',
+    'revocation_token_hash',
+    'content',
+    'password',
+])]
 class Secret extends Model
 {
     public const MAX_CONTENT_LENGTH = 10000;
@@ -20,42 +36,18 @@ class Secret extends Model
     use HasFactory, MassPrunable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
-    protected $fillable = [
-        'access_token_hash',
-        'revocation_token_hash',
-        'content',
-        'password',
-        'expired_at',
-    ];
-
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array<string>
-     */
-    protected $hidden = [
-        'access_token_hash',
-        'revocation_token_hash',
-        'content',
-        'password',
-    ];
-
-    /**
      * Scope a query to a hashed access token.
      *
      * @param  Builder<self>  $query  The secret query builder.
      * @param  string  $token  The raw access token.
      * @return Builder<self> The constrained query builder.
      */
-    public function scopeWithAccessToken(
+    #[Scope]
+    protected function withAccessToken(
         Builder $query,
         string $token,
-    ): Builder {
-        return $query->where('access_token_hash', self::hashToken($token));
+    ): void {
+        $query->where('access_token_hash', self::hashToken($token));
     }
 
     /**
@@ -100,6 +92,7 @@ class Secret extends Model
      *
      * @return array<string, string>
      */
+    #[\Override]
     protected function casts(): array
     {
         return [

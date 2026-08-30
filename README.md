@@ -13,7 +13,8 @@ Wisp is a small Laravel application for sharing encrypted, password-protected, o
 
 ## Requirements
 
-- PHP 8.2+
+- PHP 8.3+
+- Laravel 13
 - Composer 2
 - Node.js 22+ and npm
 - SQLite, MySQL, MariaDB, PostgreSQL, or another Laravel-supported database
@@ -34,6 +35,26 @@ npm run test:e2e
 
 For development, run composer run dev or start the Laravel and Vite servers separately.
 
+## Laravel Cloud
+
+Wisp is ready for Laravel Cloud with PHP 8.3 or newer and Node.js 22. Configure
+the environment to use APP_ENV=production, APP_DEBUG=false, the existing
+APP_KEY, the production APP_URL, SESSION_SECURE_COOKIE=true, and the trusted
+proxy addresses or CIDRs in TRUSTED_PROXIES.
+
+Use these Cloud commands:
+
+~~~text
+Build: composer install --no-interaction --no-progress --prefer-dist && npm ci && npm run build
+Migrate: php artisan migrate --force
+Health check: /up
+Scheduler: php artisan schedule:run
+~~~
+
+Enable the Laravel Cloud scheduler to run every minute. Laravel Cloud manages
+the web process and scheduler from the application settings; this repository
+does not change Cloud organization or application identifiers.
+
 ## Configuration
 
 Production must use APP_ENV=production, APP_DEBUG=false, a strong APP_KEY, HTTPS, and a production cache/session store. Set SESSION_SECURE_COOKIE=true and configure TRUSTED_PROXIES with only the proxy addresses or CIDRs that terminate TLS for the application. HSTS is emitted only for secure requests.
@@ -43,6 +64,8 @@ Do not put secrets, passwords, access tokens, or revocation tokens in logs, anal
 ## Testing and quality checks
 
 ~~~bash
+composer validate --strict
+composer audit
 php artisan test --compact
 vendor/bin/pint --test
 npm run format:check
@@ -51,6 +74,14 @@ npm run test:unit
 npm run build
 npm run test:e2e
 ~~~
+
+The Laravel 13 compatibility matrix runs PHPUnit on PHP 8.3, 8.4, and 8.5.
+The Composer lockfile resolves the framework's Symfony dependencies against
+PHP 8.3 so the same lockfile remains installable across all three runtimes.
+
+Application-specific middleware, model metadata, and query scopes use Laravel
+13's first-party PHP attributes where they improve locality and correctness;
+global middleware and dependency injection remain convention-based.
 
 Wisp does not use Laravel Nightwatch for end-to-end testing. Nightwatch is a monitoring product, not a browser test runner, and it is not installed in this project.
 
@@ -72,6 +103,9 @@ php artisan schedule:work
 Laravel Cloud must run the Laravel scheduler for this pruning task. Configure a
 Cloud scheduler or cron entry to invoke `php artisan schedule:run` every minute;
 no Cloud resources or application identifiers are managed by this repository.
+
+See docs/laravel-13-upgrade.md for the upgrade decisions, compatibility audit,
+deployment checklist, and rollback procedure.
 
 ## CI
 
