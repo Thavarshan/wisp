@@ -86,8 +86,9 @@ async function copyPassword() {
                     />
                     <button
                         type="button"
-                        class="absolute right-2 top-1/2 rounded p-1 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        class="absolute right-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                        aria-controls="secret-password"
                         @click="showPassword = !showPassword"
                     >
                         <EyeOff v-if="showPassword" class="size-4" aria-hidden="true" />
