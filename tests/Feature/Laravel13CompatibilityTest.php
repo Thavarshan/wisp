@@ -33,10 +33,10 @@ class Laravel13CompatibilityTest extends TestCase
         ];
 
         foreach ($expected as $method => $middleware) {
-            $attributes = new ReflectionMethod(
+            $attributes = (new ReflectionMethod(
                 SecretController::class,
                 $method,
-            )->getAttributes(Middleware::class);
+            ))->getAttributes(Middleware::class);
 
             $this->assertSame(
                 $middleware,
@@ -114,16 +114,18 @@ class Laravel13CompatibilityTest extends TestCase
         );
         $this->assertCount(
             1,
-            new ReflectionMethod(Secret::class, 'withAccessToken')
+            (new ReflectionMethod(Secret::class, 'withAccessToken'))
                 ->getAttributes(Scope::class),
         );
         $this->assertCount(
             1,
-            new \ReflectionClass(Secret::class)->getAttributes(Fillable::class),
+            (new \ReflectionClass(Secret::class))
+                ->getAttributes(Fillable::class),
         );
         $this->assertCount(
             1,
-            new \ReflectionClass(Secret::class)->getAttributes(Hidden::class),
+            (new \ReflectionClass(Secret::class))
+                ->getAttributes(Hidden::class),
         );
     }
 
