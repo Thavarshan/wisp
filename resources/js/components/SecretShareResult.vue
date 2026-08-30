@@ -51,8 +51,8 @@ async function confirmRevoke(secret: CreatedSecret) {
     <section class="mx-auto w-full max-w-2xl">
         <Card class="border-border/80 bg-card/95 shadow-xl shadow-primary/5 backdrop-blur">
             <CardHeader class="space-y-4 border-b border-border/60">
-                <div class="flex items-start justify-between gap-4">
-                    <div class="space-y-2">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="min-w-0 space-y-2">
                         <div
                             class="inline-flex size-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                         >
@@ -63,7 +63,7 @@ async function confirmRevoke(secret: CreatedSecret) {
                             Send the link to the intended recipient. It will work once and then the secret is permanently deleted.
                         </p>
                     </div>
-                    <div class="flex shrink-0 flex-wrap justify-end gap-2">
+                    <div class="flex shrink-0 flex-wrap justify-start gap-2 sm:justify-end">
                         <Badge variant="secondary">{{ secret.expiration.label }}</Badge>
                         <Badge v-if="secret.password" variant="outline">Password protected</Badge>
                     </div>
