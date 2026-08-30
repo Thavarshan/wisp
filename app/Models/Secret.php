@@ -10,7 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Secret extends Model
 {
-    /** @use HasFactory<SecretFactory> */
+    public const MAX_CONTENT_LENGTH = 10000;
+
+    public const MAX_PASSWORD_LENGTH = 255;
+
+    /**
+     * @use HasFactory<SecretFactory>
+     */
     use HasFactory, MassPrunable;
 
     /**
@@ -38,11 +44,26 @@ class Secret extends Model
         'password',
     ];
 
-    public function scopeWithAccessToken(Builder $query, string $token): Builder
-    {
+    /**
+     * Scope a query to a hashed access token.
+     *
+     * @param  Builder<self>  $query  The secret query builder.
+     * @param  string  $token  The raw access token.
+     * @return Builder<self> The constrained query builder.
+     */
+    public function scopeWithAccessToken(
+        Builder $query,
+        string $token,
+    ): Builder {
         return $query->where('access_token_hash', self::hashToken($token));
     }
 
+    /**
+     * Hash a token before it is compared with persisted secret data.
+     *
+     * @param  string  $token  The raw token.
+     * @return string The SHA-256 token hash.
+     */
     public static function hashToken(string $token): string
     {
         return hash('sha256', $token);
@@ -64,6 +85,11 @@ class Secret extends Model
         return filled($this->password);
     }
 
+    /**
+     * Build the query used by Laravel's mass-pruning command.
+     *
+     * @return Builder<self> Secrets that have reached their expiration time.
+     */
     public function prunable(): Builder
     {
         return static::query()->where('expired_at', '<=', now());

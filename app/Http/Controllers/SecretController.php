@@ -10,26 +10,58 @@ use App\Http\Requests\RevokeSecretRequest;
 use App\Http\Requests\StoreSecretRequest;
 use App\Models\Secret;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class SecretController extends Controller
 {
-    public function store(StoreSecretRequest $request, CreateSecret $createSecret): JsonResponse
-    {
+    /**
+     * Create a secret and return its private credentials.
+     *
+     * @return JsonResponse The secret credentials with no-store headers.
+     */
+    public function store(
+        StoreSecretRequest $request,
+        CreateSecret $createSecret,
+    ): JsonResponse {
         $result = $createSecret->handle($request->validated());
 
-        return response()->json($result, Response::HTTP_CREATED)
-            ->withHeaders(['Cache-Control' => 'no-store', 'X-Robots-Tag' => 'noindex, noarchive']);
+        return response()
+            ->json($result, Response::HTTP_CREATED)
+            ->withHeaders([
+                'Cache-Control' => 'no-store',
+                'X-Robots-Tag' => 'noindex, noarchive',
+            ]);
     }
 
-    public function show(string $token): InertiaResponse
-    {
+    /**
+     * Render the reveal page or return a JSON availability error.
+     *
+     * @return InertiaResponse|JsonResponse The reveal page or error response.
+     */
+    public function show(
+        Request $request,
+        string $token,
+    ): InertiaResponse|JsonResponse {
         $secret = Secret::query()->withAccessToken($token)->first();
 
-        abort_unless($secret, 404);
-        abort_if($secret->hasExpired(), 410, 'Secret has expired.');
+        if (! $secret) {
+            return $this->unavailable(
+                $request,
+                Response::HTTP_NOT_FOUND,
+                'This secret is no longer available.',
+            );
+        }
+
+        if ($secret->hasExpired()) {
+            return $this->unavailable(
+                $request,
+                Response::HTTP_GONE,
+                'This secret has expired.',
+            );
+        }
 
         return Inertia::render('Secret', [
             'token' => $token,
@@ -38,18 +70,59 @@ class SecretController extends Controller
         ]);
     }
 
-    public function reveal(RevealSecretRequest $request, RevealSecret $revealSecret, string $token): JsonResponse
-    {
-        $content = $revealSecret->handle($token, $request->validated('password'));
+    /**
+     * Return a safe unavailable response for browser or JSON callers.
+     *
+     * @return InertiaResponse|JsonResponse The error response, or aborts.
+     */
+    private function unavailable(
+        Request $request,
+        int $status,
+        string $message,
+    ): InertiaResponse|JsonResponse {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message], $status);
+        }
 
-        return response()->json(['content' => $content])
-            ->withHeaders(['Cache-Control' => 'no-store', 'Pragma' => 'no-cache', 'X-Robots-Tag' => 'noindex, noarchive']);
+        abort($status, $message);
     }
 
-    public function revoke(RevokeSecretRequest $request, RevokeSecret $revokeSecret, string $token): Response
-    {
+    /**
+     * Reveal and consume a secret after validating its optional password.
+     *
+     * @return JsonResponse The decrypted content with no-store headers.
+     */
+    public function reveal(
+        RevealSecretRequest $request,
+        RevealSecret $revealSecret,
+        string $token,
+    ): JsonResponse {
+        $content = $revealSecret->handle(
+            $token,
+            $request->validated('password'),
+        );
+
+        return response()->json(['content' => $content])
+            ->withHeaders([
+                'Cache-Control' => 'no-store',
+                'Pragma' => 'no-cache',
+                'X-Robots-Tag' => 'noindex, noarchive',
+            ]);
+    }
+
+    /**
+     * Revoke a secret after validating its private revocation token.
+     *
+     * @return Response An empty no-content response.
+     */
+    public function revoke(
+        RevokeSecretRequest $request,
+        RevokeSecret $revokeSecret,
+        string $token,
+    ): Response {
         $revokeSecret->handle($token, $request->validated('revocation_token'));
 
-        return response()->noContent()->withHeaders(['Cache-Control' => 'no-store']);
+        return response()->noContent()
+            ->withHeaders(['Cache-Control' => 'no-store']);
     }
 }

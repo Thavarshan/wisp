@@ -7,7 +7,22 @@ use App\Models\Secret;
 
 class CreateSecret
 {
-    /** @return array{access_token: string, revocation_token: string, share_url: string, expires_at: string, expiration: array{value: string, label: string}} */
+    /**
+     * Create a secret and return its one-time credentials.
+     *
+     * @param array{
+     *     content: string,
+     *     expiration: string,
+     *     password?: string|null
+     * } $data
+     * @return array{
+     *     access_token: string,
+     *     revocation_token: string,
+     *     share_url: string,
+     *     expires_at: string,
+     *     expiration: array{value: string, label: string}
+     * }
+     */
     public function handle(array $data): array
     {
         $accessToken = bin2hex(random_bytes(32));
@@ -18,7 +33,9 @@ class CreateSecret
             'access_token_hash' => Secret::hashToken($accessToken),
             'revocation_token_hash' => Secret::hashToken($revocationToken),
             'content' => $data['content'],
-            'password' => filled($data['password'] ?? null) ? $data['password'] : null,
+            'password' => filled($data['password'] ?? null)
+                ? $data['password']
+                : null,
             'expired_at' => $expiration->expiresAt(),
         ]);
 
@@ -27,7 +44,10 @@ class CreateSecret
             'revocation_token' => $revocationToken,
             'share_url' => route('secrets.show', ['token' => $accessToken]),
             'expires_at' => $secret->expired_at->toIso8601String(),
-            'expiration' => ['value' => $expiration->value, 'label' => $expiration->label()],
+            'expiration' => [
+                'value' => $expiration->value,
+                'label' => $expiration->label(),
+            ],
         ];
     }
 }

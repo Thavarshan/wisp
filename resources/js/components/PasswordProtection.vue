@@ -5,9 +5,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
+import { useClipboard } from '@/composables/useClipboard';
 import { generateSecurePassword } from '@/lib/utils';
-import { Copy } from 'lucide-vue-next';
-import { nextTick, watch } from 'vue';
+import { Copy, Eye, EyeOff, KeyRound } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
 
 const password = defineModel<string>('password', { default: '' });
 const enabled = defineModel<boolean>('enabled', { default: false });
@@ -16,64 +17,91 @@ defineProps<{
     error?: string;
 }>();
 
+const showPassword = ref(false);
+const { copyToClipboard } = useClipboard();
 const { toast } = useToast();
 
-// Handle copy to clipboard
-async function handleCopy() {
-    if (password.value && navigator.clipboard) {
-        await navigator.clipboard.writeText(password.value);
-        toast({
-            title: 'Copied!',
-            description: 'Password copied to clipboard.',
-        });
-    }
-}
+function handleEnabledChange(isEnabled: boolean | 'indeterminate') {
+    if (!isEnabled) {
+        password.value = '';
+        showPassword.value = false;
 
-watch(enabled, async (value) => {
-    if (value && !password.value) {
-        await nextTick();
+        return;
+    }
+
+    if (isEnabled === true && !password.value) {
         try {
-            const generatedPassword = generateSecurePassword();
-            password.value = generatedPassword;
+            password.value = generateSecurePassword();
             toast({
-                title: 'Generated!',
-                description: 'A secure password has been generated.',
+                title: 'Password generated',
+                description: 'A secure password is ready to share separately.',
             });
         } catch {
             toast({
-                title: 'Error',
-                description: 'Failed to generate secure password. Please enter manually.',
+                title: 'Password generation failed',
+                description: 'Enter a password manually to continue.',
                 variant: 'destructive',
             });
         }
-    } else if (!value) {
-        password.value = '';
     }
-});
+}
+
+watch(enabled, handleEnabledChange);
+
+async function copyPassword() {
+    await copyToClipboard(password.value, {
+        successTitle: 'Password copied',
+        successDescription: 'Share it with the recipient separately from the link.',
+        errorTitle: 'Copy failed',
+        errorDescription: 'The password could not be copied. You can select it manually.',
+    });
+}
 </script>
 
 <template>
-    <div class="flex flex-col items-start justify-between pt-2 md:h-16 md:flex-row">
-        <!-- Password Protect Toggle -->
-        <div class="flex items-center">
-            <Label class="flex cursor-pointer items-start gap-3">
-                <Checkbox v-model:checked="enabled" />
-                <div class="flex flex-col">
-                    <span>Password protect</span>
-                    <p class="mt-1 w-56 text-xs text-muted-foreground">For extra security, you have the option to set a password.</p>
-                </div>
-            </Label>
+    <div class="space-y-3 rounded-lg border border-border/80 bg-muted/30 p-4">
+        <div class="flex items-start gap-3">
+            <Checkbox id="password-protect" v-model="enabled" class="mt-0.5" @update:model-value="handleEnabledChange" />
+            <div class="space-y-1">
+                <Label for="password-protect" class="cursor-pointer text-sm font-medium"> Password protect this secret </Label>
+                <p class="text-xs leading-relaxed text-muted-foreground">Add a second factor and send the password through a separate channel.</p>
+            </div>
         </div>
 
-        <div v-if="enabled" class="mt-3 w-full md:mt-0 md:w-auto">
-            <!-- Password Input and Copy Button (Shown only if enabled) -->
-            <div class="relative flex items-center">
-                <Input v-model="password" type="text" placeholder="Enter password" class="w-full pr-10 md:w-64" />
-                <Button type="button" variant="ghost" size="icon" @click="handleCopy" class="absolute right-0 mr-1">
-                    <Copy class="size-4" />
+        <div v-if="enabled" class="space-y-2">
+            <Label for="secret-password">Secret password</Label>
+            <div class="flex gap-2">
+                <div class="relative flex-1">
+                    <KeyRound class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                    <Input
+                        id="secret-password"
+                        v-model="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        :aria-invalid="Boolean(error)"
+                        aria-describedby="secret-password-help secret-password-error"
+                        autocomplete="new-password"
+                        class="pl-9 pr-10"
+                        placeholder="Enter or use the generated password"
+                        required
+                    />
+                    <button
+                        type="button"
+                        class="absolute right-2 top-1/2 rounded p-1 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                        @click="showPassword = !showPassword"
+                    >
+                        <EyeOff v-if="showPassword" class="size-4" aria-hidden="true" />
+                        <Eye v-else class="size-4" aria-hidden="true" />
+                    </button>
+                </div>
+                <Button type="button" variant="outline" size="icon" aria-label="Copy password" :disabled="!password" @click="copyPassword">
+                    <Copy class="size-4" aria-hidden="true" />
                 </Button>
             </div>
-            <InputError v-if="error" :message="error" />
+            <p id="secret-password-help" class="text-xs text-muted-foreground">
+                Wisp never stores the password in plain text or returns it after creation.
+            </p>
+            <InputError id="secret-password-error" :message="error" />
         </div>
     </div>
 </template>

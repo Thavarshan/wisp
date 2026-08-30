@@ -14,25 +14,41 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-        //
-    }
+    public function register(): void {}
 
     /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
-        RateLimiter::for('secret-creation', fn (Request $request) => Limit::perMinute(10)->by('ip:'.$request->ip()));
-        RateLimiter::for('secret-access', fn (Request $request) => Limit::perMinute(60)->by('ip:'.$request->ip()));
-        RateLimiter::for('secret-reveal-ip', fn (Request $request) => Limit::perMinute(10)->by('ip:'.$request->ip()));
-        RateLimiter::for('secret-reveal-secret', fn (Request $request) => Limit::perMinute(10)->by('token:'.hash('sha256', (string) $request->route('token')))
-        );
-        RateLimiter::for('secret-revocation', fn (Request $request) => [
-            Limit::perMinute(20)->by('ip:'.$request->ip()),
-            Limit::perMinute(20)->by('token:'.hash('sha256', (string) $request->route('token'))),
-        ]);
+        RateLimiter::for('secret-creation', function (Request $request) {
+            return Limit::perMinute(10)->by('ip:'.$request->ip());
+        });
+        RateLimiter::for('secret-access', function (Request $request) {
+            return Limit::perMinute(60)->by('ip:'.$request->ip());
+        });
+        RateLimiter::for('secret-reveal-ip', function (Request $request) {
+            return Limit::perMinute(10)->by('ip:'.$request->ip());
+        });
+        RateLimiter::for('secret-reveal-secret', function (Request $request) {
+            $tokenHash = hash(
+                'sha256',
+                (string) $request->route('token'),
+            );
+
+            return Limit::perMinute(10)->by('token:'.$tokenHash);
+        });
+        RateLimiter::for('secret-revocation', function (Request $request) {
+            $tokenHash = hash(
+                'sha256',
+                (string) $request->route('token'),
+            );
+
+            return [
+                Limit::perMinute(20)->by('ip:'.$request->ip()),
+                Limit::perMinute(20)->by('token:'.$tokenHash),
+            ];
+        });
 
         if (App::isProduction()) {
             URL::forceScheme('https');

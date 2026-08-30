@@ -9,25 +9,44 @@ use Illuminate\Validation\ValidationException;
 
 class RevealSecret
 {
-    public function handle(string $accessToken, ?string $password = null): string
-    {
-        return DB::transaction(function () use ($accessToken, $password): string {
-            $secret = Secret::query()
-                ->withAccessToken($accessToken)
-                ->lockForUpdate()
-                ->first();
+    /**
+     * Reveal and permanently delete a secret in one transaction.
+     *
+     * @param  string  $accessToken  The raw access token from the share URL.
+     * @param  string|null  $password  The password supplied by the recipient.
+     * @return string The decrypted secret content.
+     */
+    public function handle(
+        string $accessToken,
+        ?string $password = null,
+    ): string {
+        return DB::transaction(
+            function () use ($accessToken, $password): string {
+                $secret = Secret::query()
+                    ->withAccessToken($accessToken)
+                    ->lockForUpdate()
+                    ->first();
 
-            abort_unless($secret, 404);
-            abort_if($secret->hasExpired(), 410, 'Secret has expired.');
+                abort_unless($secret, 404);
+                abort_if($secret->hasExpired(), 410, 'Secret has expired.');
 
-            if ($secret->hasPassword() && (! is_string($password) || ! Hash::check($password, $secret->password))) {
-                throw ValidationException::withMessages(['password' => 'The provided password is incorrect.']);
-            }
+                if ($secret->hasPassword()) {
+                    $hasValidPassword = is_string($password)
+                        && Hash::check($password, $secret->password);
 
-            $content = $secret->content;
-            $secret->delete();
+                    if (! $hasValidPassword) {
+                        throw ValidationException::withMessages([
+                            'password' => 'The provided password is incorrect.',
+                        ]);
+                    }
+                }
 
-            return $content;
-        }, attempts: 3);
+                $content = $secret->content;
+                $secret->delete();
+
+                return $content;
+            },
+            attempts: 3,
+        );
     }
 }

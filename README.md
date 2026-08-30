@@ -28,6 +28,8 @@ touch database/database.sqlite
 php artisan migrate
 npm ci
 npm run build
+npm run test:unit
+npm run test:e2e
 ~~~
 
 For development, run composer run dev or start the Laravel and Vite servers separately.
@@ -45,10 +47,15 @@ php artisan test --compact
 vendor/bin/pint --test
 npm run format:check
 npm run lint
+npm run test:unit
 npm run build
+npm run test:e2e
 ~~~
 
 Wisp does not use Laravel Nightwatch for end-to-end testing. Nightwatch is a monitoring product, not a browser test runner, and it is not installed in this project.
+
+The browser suite runs only against a local Laravel server and an isolated
+`storage/wisp-e2e.sqlite` database. It never targets the production URL.
 
 ## Deployment and migration warning
 
@@ -62,9 +69,13 @@ The scheduler prunes expired secrets hourly with overlap and multi-server protec
 php artisan schedule:work
 ~~~
 
+Laravel Cloud must run the Laravel scheduler for this pruning task. Configure a
+Cloud scheduler or cron entry to invoke `php artisan schedule:run` every minute;
+no Cloud resources or application identifiers are managed by this repository.
+
 ## CI
 
-GitHub Actions runs dependency installation from the lockfiles, PHP formatting checks, frontend formatting/lint/build checks, and PHPUnit. CI never rewrites files and has read-only repository permissions. Configure main branch protection in GitHub separately to require the CI checks and pull requests; repository settings are intentionally not changed by this codebase update.
+GitHub Actions runs dependency installation from the lockfiles, PHP formatting checks, PHPUnit, frontend formatting/lint/type/unit/build checks, and a separate local-only Playwright job on every branch and pull request. CI never rewrites source files and has read-only repository permissions. A final deployment gate runs only after all checks pass on pushes to `main`; configure the `LARAVEL_CLOUD_DEPLOY_HOOK` GitHub Actions secret with the Laravel Cloud deploy-hook URL. Configure main branch protection in GitHub separately to require the CI checks and pull requests; repository settings are intentionally not changed by this codebase update.
 
 ## License
 

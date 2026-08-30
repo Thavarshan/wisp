@@ -2,9 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [development, main]
   pull_request:
-    branches: [development, main]
 
 permissions:
   contents: read
@@ -29,6 +27,7 @@ jobs:
       - run: npm run format:check
       - run: npm run lint
       - run: npx vue-tsc --noEmit
+      - run: npm run test:unit
       - run: npm run build
       - name: Upload built frontend assets
         uses: actions/upload-artifact@v4
@@ -56,3 +55,39 @@ jobs:
           name: vite-build
           path: public/build
       - run: php artisan test --compact
+
+  e2e:
+    name: Local browser workflow
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: npm ci
+      - run: cp .env.example .env
+      - run: php artisan key:generate --force
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+
+  deploy:
+    name: Deploy to Laravel Cloud
+    runs-on: ubuntu-latest
+    needs: [quality, tests, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Trigger Laravel Cloud deployment
+        env:
+          LARAVEL_CLOUD_DEPLOY_HOOK: ${{ secrets.LARAVEL_CLOUD_DEPLOY_HOOK }}
+        run: |
+          test -n "$LARAVEL_CLOUD_DEPLOY_HOOK"
+          curl --fail --silent --show-error --output /dev/null \
+            --request POST "$LARAVEL_CLOUD_DEPLOY_HOOK"

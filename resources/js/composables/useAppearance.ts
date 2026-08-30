@@ -1,6 +1,6 @@
 import { onMounted, ref } from 'vue';
 
-type Appearance = 'light' | 'dark' | 'system';
+export type Appearance = 'light' | 'dark' | 'system';
 const appearances: Appearance[] = ['light', 'dark', 'system'];
 
 function isAppearance(value: string | null): value is Appearance {

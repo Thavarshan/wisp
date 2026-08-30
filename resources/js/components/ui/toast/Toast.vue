@@ -15,13 +15,17 @@ const delegatedProps = computed(() => {
 })
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
+
+function handleOpenChange(open: boolean) {
+  props.onOpenChange?.(open)
+}
 </script>
 
 <template>
   <ToastRoot
     v-bind="forwarded"
     :class="cn(toastVariants({ variant }), props.class)"
-    @update:open="onOpenChange"
+    @update:open="handleOpenChange"
   >
     <slot />
   </ToastRoot>

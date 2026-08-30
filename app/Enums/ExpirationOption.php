@@ -15,6 +15,11 @@ enum ExpirationOption: string
     case TWO_DAYS = '2d';
     case ONE_WEEK = '1w';
 
+    /**
+     * Get the human-readable label for this expiration option.
+     *
+     * @return string The label displayed in the creation form.
+     */
     public function label(): string
     {
         return match ($this) {
@@ -29,6 +34,12 @@ enum ExpirationOption: string
         };
     }
 
+    /**
+     * Calculate the expiration timestamp from the supplied starting point.
+     *
+     * @param  Carbon|null  $from  The starting point, or the current time.
+     * @return Carbon The calculated expiration timestamp.
+     */
     public function expiresAt(?Carbon $from = null): Carbon
     {
         return match ($this) {
@@ -43,11 +54,16 @@ enum ExpirationOption: string
         };
     }
 
-    /** @return array<int, array{value: string, label: string}> */
+    /**
+     * @return array<int, array{value: string, label: string}>
+     */
     public static function options(): array
     {
         return array_map(
-            fn (self $option): array => ['value' => $option->value, 'label' => $option->label()],
+            fn (self $option): array => [
+                'value' => $option->value,
+                'label' => $option->label(),
+            ],
             self::cases(),
         );
     }

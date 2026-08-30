@@ -5,7 +5,9 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/wisp-e2e.sqlite
 /storage/pail
+/test-results
 /vendor
 .env
 .env.backup
