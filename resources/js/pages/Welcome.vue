@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import ExpirationOptions from '@/components/ExpirationOptions.vue';
-import InputError from '@/components/InputError.vue';
 import PasswordProtection from '@/components/PasswordProtection.vue';
 import SecretContentInput from '@/components/SecretContentInput.vue';
 import SecretShareResult from '@/components/SecretShareResult.vue';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { useCreateSecret } from '@/composables/useCreateSecret';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { MAX_SECRET_LENGTH, type CreateSecretPayload, type CreatedSecret, type ExpirationOption } from '@/types/secret';
 import { Head } from '@inertiajs/vue3';
-import { ArrowRight, LockKeyhole, ShieldCheck } from 'lucide-vue-next';
+import { AlertCircle, ArrowRight, LoaderCircle, LockKeyhole, ShieldCheck } from 'lucide-vue-next';
 import { reactive, ref } from 'vue';
 
 defineOptions({ layout: AppLayout });
@@ -83,10 +84,10 @@ function createAnother() {
                     history.
                 </p>
             </div>
-            <div class="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3 lg:grid-cols-1">
-                <div class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-primary" />Encrypted at rest</div>
-                <div class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-primary" />One successful reveal</div>
-                <div class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-primary" />Automatic expiration</div>
+            <div class="flex flex-wrap gap-2" aria-label="Security properties">
+                <Badge variant="outline">Encrypted at rest</Badge>
+                <Badge variant="outline">One-time access</Badge>
+                <Badge variant="outline">Auto-deletes</Badge>
             </div>
         </div>
 
@@ -111,13 +112,18 @@ function createAnother() {
 
                     <PasswordProtection v-model:enabled="passwordProtected" v-model:password="form.password" :error="fieldError('password')" />
 
-                    <InputError :message="error" role="alert" />
+                    <Alert v-if="error" variant="destructive" aria-live="assertive">
+                        <AlertCircle class="size-4" aria-hidden="true" />
+                        <AlertTitle>Could not create the link</AlertTitle>
+                        <AlertDescription>{{ error }}</AlertDescription>
+                    </Alert>
                 </CardContent>
 
                 <CardFooter class="flex-col items-stretch gap-3 border-t border-border/60 pt-6">
                     <Button type="submit" size="lg" class="w-full" :disabled="status === 'submitting' || form.content.length > MAX_SECRET_LENGTH">
+                        <LoaderCircle v-if="status === 'submitting'" class="size-4 animate-spin" aria-hidden="true" />
                         <span>{{ status === 'submitting' ? 'Creating secure link…' : 'Create secure link' }}</span>
-                        <ArrowRight class="ml-auto size-4" aria-hidden="true" />
+                        <ArrowRight v-if="status !== 'submitting'" class="ml-auto size-4" aria-hidden="true" />
                     </Button>
                     <p class="text-center text-xs text-muted-foreground">By continuing, you confirm you have permission to share this information.</p>
                 </CardFooter>

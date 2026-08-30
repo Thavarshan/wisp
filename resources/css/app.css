@@ -79,3 +79,17 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+.expand-enter-active,
+.expand-leave-active {
+    overflow: hidden;
+    transition:
+        opacity 160ms ease,
+        transform 160ms ease;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+}

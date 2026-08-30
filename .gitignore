@@ -35,6 +35,7 @@ yarn-error.log
 /coverage.txt
 /coverage.json
 /.coverage_output/
+/artifacts/ui-review/
 /phpunit-coverage.xml
 /c3.php
 /tests/_output/

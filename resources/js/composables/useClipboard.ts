@@ -19,23 +19,31 @@ export function useClipboard() {
         isCopying.value = true;
 
         try {
-            if (!navigator.clipboard) {
-                throw new Error('Clipboard API unavailable');
-            }
-
-            await navigator.clipboard.writeText(text);
-            const success = true;
-
-            if (success) {
-                toast({
-                    title: options?.successTitle || 'Copied!',
-                    description: options?.successDescription || 'Text copied to clipboard.',
-                });
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(text);
             } else {
-                throw new Error('Failed to copy to clipboard');
+                const fallback = document.createElement('textarea');
+                fallback.value = text;
+                fallback.setAttribute('readonly', '');
+                fallback.style.position = 'fixed';
+                fallback.style.opacity = '0';
+                document.body.appendChild(fallback);
+                fallback.select();
+
+                const copied = document.execCommand('copy');
+                fallback.remove();
+
+                if (!copied) {
+                    throw new Error('Clipboard API unavailable');
+                }
             }
 
-            return success;
+            toast({
+                title: options?.successTitle || 'Copied!',
+                description: options?.successDescription || 'Text copied to clipboard.',
+            });
+
+            return true;
         } catch {
             toast({
                 title: options?.errorTitle || 'Copy failed',

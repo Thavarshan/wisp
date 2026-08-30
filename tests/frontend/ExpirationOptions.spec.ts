@@ -25,5 +25,9 @@ describe('ExpirationOptions', () => {
         await wrapper.find('input[value="1h"]').trigger('change');
 
         expect(wrapper.emitted('update:modelValue')).toEqual([['1h']]);
+
+        const infoButton = wrapper.get('[aria-label="Learn about expiration"]');
+
+        expect(infoButton.attributes('type')).toBe('button');
     });
 });

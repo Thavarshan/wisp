@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CopyButton from '@/components/CopyButton.vue';
 import InputError from '@/components/InputError.vue';
 import SecretContentInput from '@/components/SecretContentInput.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -6,12 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useClipboard } from '@/composables/useClipboard';
 import { useRevealSecret } from '@/composables/useRevealSecret';
 import { useSecretTimer } from '@/composables/useSecretTimer';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head } from '@inertiajs/vue3';
-import { AlertCircle, Check, Copy, Eye, ShieldAlert, Trash2 } from 'lucide-vue-next';
+import { Head, Link } from '@inertiajs/vue3';
+import { AlertCircle, Check, Eye, LoaderCircle, ShieldAlert, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 defineOptions({ layout: AppLayout });
@@ -23,9 +23,7 @@ const props = defineProps<{
 }>();
 
 const password = ref('');
-const confirmingReveal = ref(false);
 const expiredByTimer = ref(false);
-const { copyToClipboard } = useClipboard();
 const { status, content, error, reveal, markExpired, clear } = useRevealSecret();
 const { countdown } = useSecretTimer(props.expired_at, () => {
     expiredByTimer.value = true;
@@ -33,50 +31,52 @@ const { countdown } = useSecretTimer(props.expired_at, () => {
 });
 
 const isUnavailable = computed(() => expiredByTimer.value || status.value === 'expired' || status.value === 'consumed');
-const canSubmit = computed(() => !isUnavailable.value && status.value !== 'revealing' && (!props.has_password || Boolean(password.value)));
+const canSubmit = computed(
+    () => !isUnavailable.value && (status.value === 'ready' || status.value === 'error') && (!props.has_password || Boolean(password.value)),
+);
 
-function requestReveal() {
-    if (!canSubmit.value) {
-        return;
-    }
+const heading = computed(() => {
+    if (status.value === 'revealed') return 'Secret revealed';
+    if (status.value === 'cleared') return 'Plaintext cleared';
+    if (status.value === 'consumed') return 'Secret already consumed';
+    if (status.value === 'expired') return 'Secret expired';
 
-    confirmingReveal.value = true;
-}
+    return 'Ready to reveal';
+});
 
-async function confirmReveal() {
-    confirmingReveal.value = false;
+async function handleReveal() {
+    if (!canSubmit.value) return;
+
     await reveal(props.token, props.has_password ? password.value : null);
     password.value = '';
-}
-
-function clearSecret() {
-    clear();
 }
 </script>
 
 <template>
     <Head title="Reveal secret" />
 
-    <section class="w-full max-w-2xl">
+    <section class="mx-auto w-full max-w-2xl">
+        <div class="sr-only" aria-live="polite">{{ heading }}</div>
         <Card class="border-border/80 bg-card/95 shadow-xl shadow-primary/5 backdrop-blur">
             <CardHeader class="space-y-3 border-b border-border/60">
-                <div class="flex items-center justify-between gap-4">
+                <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-[0.2em] text-primary">Private message</p>
-                        <h1 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Ready when you are</h1>
+                        <p class="text-xs font-medium uppercase tracking-[0.2em] text-primary">One-time secret</p>
+                        <h1 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{{ heading }}</h1>
                     </div>
-                    <Badge v-if="!isUnavailable" variant="secondary" class="shrink-0">{{ countdown }}</Badge>
-                    <Badge v-else variant="destructive" class="shrink-0">
-                        {{ status === 'consumed' ? 'Consumed' : 'Unavailable' }}
+                    <Badge v-if="status === 'ready' || status === 'error' || status === 'revealing'" variant="secondary" class="shrink-0">
+                        {{ countdown }}
                     </Badge>
+                    <Badge v-else-if="status === 'revealed'" variant="outline" class="shrink-0">Revealed</Badge>
+                    <Badge v-else variant="destructive" class="shrink-0">Unavailable</Badge>
                 </div>
                 <p class="max-w-xl text-sm leading-6 text-muted-foreground">
-                    Revealing this message permanently deletes it. Only continue if you are the intended recipient.
+                    A successful reveal permanently deletes the stored message. Only continue if you are the intended recipient.
                 </p>
             </CardHeader>
 
             <CardContent class="space-y-5 pt-6">
-                <Alert v-if="status === 'ready' && !isUnavailable" class="border-primary/20 bg-primary/5">
+                <Alert v-if="status === 'ready' || status === 'revealing'" class="border-primary/20 bg-primary/5">
                     <ShieldAlert class="size-4 text-primary" aria-hidden="true" />
                     <AlertTitle>One-time access</AlertTitle>
                     <AlertDescription>
@@ -84,10 +84,10 @@ function clearSecret() {
                     </AlertDescription>
                 </Alert>
 
-                <Alert v-if="status === 'revealed'" variant="destructive">
-                    <AlertCircle class="size-4" aria-hidden="true" />
-                    <AlertTitle>This secret has been consumed.</AlertTitle>
-                    <AlertDescription>Keep a copy only if you are authorized to do so.</AlertDescription>
+                <Alert v-if="status === 'revealed'" class="border-emerald-500/30 bg-emerald-500/5 text-foreground">
+                    <Check class="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                    <AlertTitle>Secret revealed</AlertTitle>
+                    <AlertDescription>The server copy has been deleted. Clear this screen when you are finished.</AlertDescription>
                 </Alert>
 
                 <Alert v-if="status === 'cleared'">
@@ -102,7 +102,7 @@ function clearSecret() {
                     <AlertDescription>{{ error }}</AlertDescription>
                 </Alert>
 
-                <div v-if="status !== 'revealed' && status !== 'cleared' && status !== 'consumed'" class="space-y-4">
+                <div v-if="status === 'ready' || status === 'error' || status === 'revealing'" class="space-y-4">
                     <div v-if="has_password" class="space-y-2">
                         <label for="password" class="text-sm font-medium">Password required</label>
                         <Input
@@ -114,20 +114,23 @@ function clearSecret() {
                             :aria-invalid="Boolean(error)"
                             aria-describedby="password-help password-error"
                             placeholder="Enter the password shared with you"
-                            @keyup.enter="requestReveal"
+                            @keyup.enter="handleReveal"
                         />
                         <p id="password-help" class="text-xs text-muted-foreground">The password is never stored by Wisp.</p>
                     </div>
-                    <InputError id="password-error" :message="error" />
+                    <InputError id="password-error" :message="status === 'error' ? error : ''" />
                 </div>
 
-                <div v-if="status === 'revealed' && content" class="space-y-3">
-                    <div class="flex items-center justify-between gap-3">
-                        <label for="revealed-secret" class="text-sm font-medium">Revealed content</label>
-                        <span class="text-xs text-muted-foreground">Clear it when finished</span>
-                    </div>
-                    <SecretContentInput id="revealed-secret" v-model="content" :readonly="true" :required="false" />
-                </div>
+                <SecretContentInput
+                    v-if="status === 'revealed' && content"
+                    id="revealed-secret"
+                    v-model="content"
+                    label="Revealed content"
+                    helper-text="Plaintext is only held in this page until you clear it."
+                    :info-text="''"
+                    :readonly="true"
+                    :required="false"
+                />
 
                 <Alert v-if="status === 'error'" variant="destructive">
                     <AlertCircle class="size-4" aria-hidden="true" />
@@ -137,55 +140,31 @@ function clearSecret() {
             </CardContent>
 
             <CardFooter class="flex-col gap-3 border-t border-border/60 pt-6 sm:flex-row sm:justify-end">
-                <Button v-if="status === 'revealed'" type="button" variant="outline" @click="copyToClipboard(content ?? '')">
-                    <Copy class="mr-2 size-4" aria-hidden="true" /> Copy content
+                <CopyButton v-if="status === 'revealed' && content" :text="content" label="Copy revealed content" />
+                <Button v-if="status === 'revealed'" type="button" variant="destructive" @click="clear">
+                    <Trash2 class="size-4" aria-hidden="true" /> Clear plaintext
                 </Button>
-                <Button v-if="status === 'revealed'" type="button" variant="destructive" @click="clearSecret">
-                    <Trash2 class="mr-2 size-4" aria-hidden="true" /> Clear plaintext
-                </Button>
+                <Link
+                    v-if="status === 'cleared'"
+                    href="/"
+                    as="button"
+                    class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                    Return to Wisp
+                </Link>
                 <Button
-                    v-if="status !== 'revealed' && status !== 'cleared' && status !== 'consumed'"
+                    v-if="status === 'ready' || status === 'error' || status === 'revealing'"
                     type="button"
                     size="lg"
                     class="w-full sm:w-auto"
                     :disabled="!canSubmit"
-                    @click="requestReveal"
+                    @click="handleReveal"
                 >
-                    <Eye class="mr-2 size-4" aria-hidden="true" />
-                    {{ status === 'revealing' ? 'Revealing…' : 'Reveal and consume' }}
+                    <LoaderCircle v-if="status === 'revealing'" class="size-4 animate-spin" aria-hidden="true" />
+                    <Eye v-else class="size-4" aria-hidden="true" />
+                    {{ status === 'revealing' ? 'Revealing…' : 'Reveal secret' }}
                 </Button>
             </CardFooter>
         </Card>
     </section>
-
-    <div
-        v-if="confirmingReveal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
-        role="presentation"
-        @click.self="confirmingReveal = false"
-    >
-        <div
-            class="w-full max-w-md rounded-xl border border-border bg-card p-6 text-card-foreground shadow-2xl"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="reveal-title"
-            aria-describedby="reveal-description"
-        >
-            <div class="flex items-start gap-3">
-                <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-                    <AlertCircle class="size-5" aria-hidden="true" />
-                </div>
-                <div class="space-y-2">
-                    <h2 id="reveal-title" class="font-semibold">Reveal and consume this secret?</h2>
-                    <p id="reveal-description" class="text-sm leading-6 text-muted-foreground">
-                        This action permanently deletes the stored message. It cannot be undone or repeated.
-                    </p>
-                </div>
-            </div>
-            <div class="mt-6 flex justify-end gap-2">
-                <Button type="button" variant="outline" @click="confirmingReveal = false">Go back</Button>
-                <Button type="button" variant="destructive" @click="confirmReveal">Reveal now</Button>
-            </div>
-        </div>
-    </div>
 </template>
