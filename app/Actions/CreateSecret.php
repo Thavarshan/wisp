@@ -16,7 +16,7 @@ class CreateSecret
      *     password?: string|null
      * } $data
      * @return array{
-     *     access_token: string,
+     *     secret_id: string,
      *     revocation_token: string,
      *     share_url: string,
      *     expires_at: string,
@@ -40,9 +40,13 @@ class CreateSecret
         ]);
 
         return [
-            'access_token' => $accessToken,
+            'secret_id' => $secret->access_token_hash,
             'revocation_token' => $revocationToken,
-            'share_url' => route('secrets.show', ['token' => $accessToken]),
+            'share_url' => rtrim(config('app.url'), '/').route(
+                'secrets.show',
+                ['secret_id' => $secret->access_token_hash],
+                false,
+            ).'#'.$accessToken,
             'expires_at' => $secret->expired_at->toIso8601String(),
             'expiration' => [
                 'value' => $expiration->value,

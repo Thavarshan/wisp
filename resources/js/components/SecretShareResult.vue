@@ -43,7 +43,7 @@ function selectShareUrl(event: FocusEvent) {
 
 async function confirmRevoke(secret: CreatedSecret) {
     showRevokeDialog.value = false;
-    await revoke(secret.accessToken, secret.revocationToken);
+    await revoke(secret.secretId, secret.revocationToken);
 }
 </script>
 

@@ -14,11 +14,14 @@ Route::get('/', function () {
 Route::post('secrets', [SecretController::class, 'store'])
     ->name('secrets.store');
 
-Route::get('secrets/{token}', [SecretController::class, 'show'])
+Route::get('secrets/{secret_id}', [SecretController::class, 'show'])
+    ->where('secret_id', '[0-9a-f]{64}')
     ->name('secrets.show');
 
-Route::post('secrets/{token}/reveal', [SecretController::class, 'reveal'])
+Route::post('secrets/{secret_id}/reveal', [SecretController::class, 'reveal'])
+    ->where('secret_id', '[0-9a-f]{64}')
     ->name('secrets.reveal');
 
-Route::delete('secrets/{token}', [SecretController::class, 'revoke'])
+Route::delete('secrets/{secret_id}', [SecretController::class, 'revoke'])
+    ->where('secret_id', '[0-9a-f]{64}')
     ->name('secrets.revoke');

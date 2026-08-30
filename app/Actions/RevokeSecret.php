@@ -10,14 +10,14 @@ class RevokeSecret
     /**
      * Revoke and permanently delete a secret after token verification.
      *
-     * @param  string  $accessToken  The raw access token from the share URL.
+     * @param  string  $secretId  The public secret identifier from the URL.
      * @param  string  $revocationToken  The private revocation token.
      */
-    public function handle(string $accessToken, string $revocationToken): void
+    public function handle(string $secretId, string $revocationToken): void
     {
-        DB::transaction(function () use ($accessToken, $revocationToken): void {
+        DB::transaction(function () use ($secretId, $revocationToken): void {
             $secret = Secret::query()
-                ->withAccessToken($accessToken)
+                ->withSecretId($secretId)
                 ->lockForUpdate()
                 ->first();
             abort_unless($secret, 404);

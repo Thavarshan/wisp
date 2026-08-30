@@ -4,9 +4,12 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue, type Config } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
+import { consumeAccessToken } from './lib/secretLink';
 import { configureSecretApi } from './services/secretApi';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Wisp';
+
+window.__wispAccessToken = consumeAccessToken();
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -21,9 +24,7 @@ createInertiaApp({
             .use(ZiggyVue, ziggyConfig)
             .mount(el);
     },
-    progress: {
-        color: '#7c3aed',
-    },
+    progress: false,
 });
 
 // This will set light / dark mode on page load...

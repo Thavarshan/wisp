@@ -8,7 +8,8 @@
         "format:check": "prettier --check resources/ tests/frontend/ playwright.config.ts",
         "lint": "eslint .",
         "test:unit": "vitest run",
-        "test:e2e": "playwright test"
+        "test:e2e": "playwright test",
+        "test:e2e:csp": "E2E_APP_ENV=staging playwright test"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",

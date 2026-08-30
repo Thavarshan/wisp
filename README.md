@@ -7,7 +7,8 @@ Wisp is a small Laravel application for sharing encrypted, password-protected, o
 - Secret content is encrypted at rest with Laravel's encrypted cast.
 - Optional passwords are stored with Laravel's hashed cast.
 - Each secret receives independent 256-bit access and revocation tokens. Only SHA-256 token hashes are stored.
-- The initial access page contains metadata only. A successful reveal verifies the password, decrypts the content, deletes the row in the same transaction, and then returns the plaintext with no-store headers.
+- Share URLs contain the public token hash in the path and the bearer access token in the URL fragment. The fragment is consumed in memory and removed from browser history before reveal, so it is never sent to the server or written to HTTP access logs.
+- The initial access page contains metadata only. A successful reveal verifies both the fragment token and optional password, decrypts the content, deletes the row in the same transaction, and then returns the plaintext with no-store headers.
 - The creator receives the share URL and revocation token once. They must save the revocation token before refreshing; Wisp intentionally does not persist it.
 - Expiration options are defined by App\Enums\ExpirationOption and are passed to Vue by Laravel.
 
@@ -57,9 +58,13 @@ does not change Cloud organization or application identifiers.
 
 ## Configuration
 
-Production must use APP_ENV=production, APP_DEBUG=false, a strong APP_KEY, HTTPS, and a production cache/session store. Set SESSION_SECURE_COOKIE=true and configure TRUSTED_PROXIES with only the proxy addresses or CIDRs that terminate TLS for the application. HSTS is emitted only for secure requests.
+Production must use APP_ENV=production, APP_DEBUG=false, a strong APP_KEY, HTTPS, and a production cache/session store. Set APP_URL to the one canonical HTTPS hostname, SESSION_SECURE_COOKIE=true, and configure TRUSTED_PROXIES with only the proxy addresses or CIDRs that terminate TLS for the application. Laravel rejects requests for other hosts. HSTS is emitted only for secure requests.
 
-Do not put secrets, passwords, access tokens, or revocation tokens in logs, analytics, browser storage, URLs other than the public share URL, or monitoring payloads.
+Do not put secrets, passwords, access tokens, or revocation tokens in logs, analytics, browser storage, or monitoring payloads. Configure the CDN, load balancer, web server, and application observability stack to omit request bodies and redact secret identifiers if they are retained. The access token is deliberately carried only in the share URL fragment; do not rewrite fragments into request paths or query strings.
+
+Passwords are limited to 72 UTF-8 bytes because Wisp uses bcrypt. NUL characters are rejected. Content is stored in a large text column because encryption expands multibyte content.
+
+Production responses use a per-response CSP nonce for inline bootstrap and tooling scripts. Keep `script-src` restricted to `'self'` plus the generated nonce, keep style elements restricted to `'self'`, and retain only `style-src-attr 'unsafe-inline'` for Reka's runtime positioning.
 
 ## Testing and quality checks
 
@@ -90,9 +95,9 @@ The browser suite runs only against a local Laravel server and an isolated
 
 ## Deployment and migration warning
 
-The secret-table modernization migration removes the legacy predictable uid and unused name columns. Existing links are deliberately invalidated because legacy rows have no access-token hash. Existing rows are not deleted by the migration; they remain inaccessible and are removed by scheduled model:prune once expired.
+The secret-table modernization migration removes the legacy predictable uid and unused name columns. The secure secret storage migration deliberately deletes all existing secrets because their bearer-token URLs cannot be made safe retroactively. Existing share links therefore stop working at deployment.
 
-Before production deployment, take a database backup, test the migration against a copy, schedule a maintenance window if the database engine requires it, and verify the application key and proxy settings. Rolling back cannot recover legacy uid values or recreate lost token hashes, so restore from the backup if rollback is required. Do not run destructive migration commands against production without that procedure.
+Before production deployment, take a database backup, announce link invalidation, test the migrations against a copy, schedule a maintenance window, and verify the application key, canonical URL, trusted hosts, and proxy settings. Both secret migrations are intentionally irreversible; restore the backup if rollback is required. Do not run destructive migration commands against production without that procedure.
 
 The scheduler prunes expired secrets hourly with overlap and multi-server protection:
 

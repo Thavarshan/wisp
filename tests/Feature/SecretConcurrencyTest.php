@@ -40,7 +40,7 @@ class SecretConcurrencyTest extends TestCase
                         config(['database.connections.sqlite.database' => $databasePath]);
                         DB::purge('sqlite');
 
-                        return ['success' => true, 'content' => app(RevealSecret::class)->handle($created['access_token'])];
+                        return ['success' => true, 'content' => app(RevealSecret::class)->handle($created['secret_id'], parse_url($created['share_url'], PHP_URL_FRAGMENT))];
                     } catch (Throwable $exception) {
                         return ['success' => false, 'exception' => $exception::class, 'message' => $exception->getMessage()];
                     }
@@ -50,7 +50,7 @@ class SecretConcurrencyTest extends TestCase
                         config(['database.connections.sqlite.database' => $databasePath]);
                         DB::purge('sqlite');
 
-                        return ['success' => true, 'content' => app(RevealSecret::class)->handle($created['access_token'])];
+                        return ['success' => true, 'content' => app(RevealSecret::class)->handle($created['secret_id'], parse_url($created['share_url'], PHP_URL_FRAGMENT))];
                     } catch (Throwable $exception) {
                         return ['success' => false, 'exception' => $exception::class, 'message' => $exception->getMessage()];
                     }

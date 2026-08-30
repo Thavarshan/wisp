@@ -1,6 +1,20 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('secret workflow', () => {
+    test('strict CSP has no browser policy violations', async ({ page }) => {
+        const violations: string[] = [];
+        page.on('console', (message) => {
+            if (message.type() === 'error' && message.text().includes('Content Security Policy')) {
+                violations.push(message.text());
+            }
+        });
+
+        await page.goto('/');
+        await page.getByRole('button', { name: 'More about secret content' }).click();
+
+        expect(violations).toEqual([]);
+    });
+
     test('supports appearance selection and contextual help', async ({ page }) => {
         await page.goto('/');
 
@@ -15,13 +29,19 @@ test.describe('secret workflow', () => {
         await expect(page.getByText('permanently deleted after its first successful reveal')).toBeVisible();
     });
 
-    test('creates and consumes an unprotected secret once', async ({ page }) => {
+    test('creates and consumes an unprotected secret once', async ({ page, context }) => {
         await page.goto('/');
         await page.getByRole('textbox', { name: 'Secret content' }).fill('a local one-time message');
         await page.getByRole('button', { name: 'Create secure link' }).click();
 
         await expect(page.getByRole('heading', { name: 'Your secure link is ready' })).toBeVisible();
         const shareUrl = await page.locator('#share-link').inputValue();
+
+        await page.goto(shareUrl);
+        expect(new URL(page.url()).hash).toBe('');
+        await expect(page.getByRole('alert', { name: /Secure link key missing/ })).toHaveCount(0);
+        await page.reload();
+        await expect(page.getByText('Secure link key missing')).toBeVisible();
 
         await page.goto(shareUrl);
         await page.getByRole('button', { name: 'Reveal secret' }).click();
@@ -31,8 +51,8 @@ test.describe('secret workflow', () => {
         await page.getByRole('button', { name: 'Clear plaintext' }).click();
         await expect(page.getByText('Plaintext cleared from this page.')).toBeVisible();
 
-        const secondVisit = await page.goto(shareUrl);
-        expect(secondVisit?.status()).toBe(404);
+        const secondVisit = await context.request.get(shareUrl);
+        expect(secondVisit.status()).toBe(404);
     });
 
     test('supports keyboard password protection on a mobile viewport', async ({ page }) => {

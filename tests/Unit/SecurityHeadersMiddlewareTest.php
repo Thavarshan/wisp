@@ -21,7 +21,9 @@ class SecurityHeadersMiddlewareTest extends TestCase
         $this->assertStringContainsString("default-src 'self'", $csp);
         $this->assertStringContainsString("object-src 'none'", $csp);
         $this->assertStringContainsString("base-uri 'self'", $csp);
-        $this->assertStringNotContainsString('unsafe-inline', $csp);
+        $this->assertStringNotContainsString("style-src 'unsafe-inline'", $csp);
+        $this->assertStringContainsString("style-src-attr 'unsafe-inline'", $csp);
+        $this->assertMatchesRegularExpression("/script-src 'self' 'nonce-[^']+'/", $csp);
     }
 
     public function test_it_adds_hsts_only_for_secure_production_requests(): void

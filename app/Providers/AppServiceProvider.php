@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('secret-reveal-secret', function (Request $request) {
             $tokenHash = hash(
                 'sha256',
-                (string) $request->route('token'),
+                (string) $request->route('secret_id'),
             );
 
             return Limit::perMinute(10)->by('token:'.$tokenHash);
@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('secret-revocation', function (Request $request) {
             $tokenHash = hash(
                 'sha256',
-                (string) $request->route('token'),
+                (string) $request->route('secret_id'),
             );
 
             return [
@@ -52,6 +52,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         if (App::isProduction()) {
+            URL::forceRootUrl(config('app.url'));
             URL::forceScheme('https');
         }
     }

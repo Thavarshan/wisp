@@ -15,6 +15,7 @@ class AppServiceProviderTest extends TestCase
         App::shouldReceive('isProduction')->once()->andReturn(true);
 
         // Mock the URL facade to expect forceScheme to be called with 'https'
+        URL::shouldReceive('forceRootUrl')->once()->with(config('app.url'));
         URL::shouldReceive('forceScheme')->once()->with('https');
 
         // Create and boot the service provider

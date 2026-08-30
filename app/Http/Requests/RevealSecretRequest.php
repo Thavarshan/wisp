@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Secret;
+use App\Rules\BcryptPassword;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RevealSecretRequest extends FormRequest
@@ -25,10 +26,13 @@ class RevealSecretRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'access_token' => [
+                'nullable',
+            ],
             'password' => [
                 'nullable',
                 'string',
-                'max:'.Secret::MAX_PASSWORD_LENGTH,
+                new BcryptPassword,
             ],
         ];
     }
@@ -42,7 +46,7 @@ class RevealSecretRequest extends FormRequest
     {
         return [
             'password.string' => 'Enter a valid password.',
-            'password.max' => 'The password may not exceed :max characters.',
+            'password.bcrypt_password' => 'The password may not exceed 72 UTF-8 bytes and may not contain null characters.',
         ];
     }
 }

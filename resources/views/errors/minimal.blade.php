@@ -6,13 +6,21 @@
 
         <title>@yield('title') · Wisp</title>
         @vite(['resources/css/app.css'])
-        <script>
+        <script nonce="{{ request()->attributes->get('csp_nonce') }}">
             (() => {
+                if (window.location.hash) {
+                    window.history.replaceState(null, document.title, `${window.location.pathname}${window.location.search}`);
+                }
+
                 const appearance = localStorage.getItem('appearance');
                 const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 const isDark = appearance === 'dark' || (appearance !== 'light' && systemDark);
 
                 document.documentElement.classList.toggle('dark', isDark);
+
+                window.addEventListener('DOMContentLoaded', () => {
+                    document.getElementById('retry')?.addEventListener('click', () => window.location.reload());
+                });
             })();
         </script>
     </head>
@@ -44,7 +52,7 @@
                     <a href="/" class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                         Return to Wisp
                     </a>
-                    <button type="button" onclick="window.location.reload()" class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-6 text-sm font-medium shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    <button id="retry" type="button" class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-6 text-sm font-medium shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                         Try again
                     </button>
                 </div>

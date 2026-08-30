@@ -1,5 +1,5 @@
 export const MAX_SECRET_LENGTH = 10_000;
-export const MAX_PASSWORD_LENGTH = 255;
+export const MAX_PASSWORD_BYTES = 72;
 
 export type ExpirationValue = '5m' | '30m' | '1h' | '6h' | '12h' | '1d' | '2d' | '1w';
 
@@ -15,7 +15,7 @@ export interface CreateSecretPayload {
 }
 
 export interface CreatedSecret {
-    accessToken: string;
+    secretId: string;
     shareUrl: string;
     revocationToken: string;
     expiresAt: string;
@@ -24,6 +24,7 @@ export interface CreatedSecret {
 }
 
 export interface RevealSecretPayload {
+    access_token: string;
     password: string | null;
 }
 

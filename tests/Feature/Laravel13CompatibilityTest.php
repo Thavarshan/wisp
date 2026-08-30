@@ -62,16 +62,16 @@ class Laravel13CompatibilityTest extends TestCase
     {
         $this->assertSame('/secrets', route('secrets.store', absolute: false));
         $this->assertSame(
-            '/secrets/access-token',
-            route('secrets.show', ['token' => 'access-token'], false),
+            '/secrets/'.str_repeat('a', 64),
+            route('secrets.show', ['secret_id' => str_repeat('a', 64)], false),
         );
         $this->assertSame(
-            '/secrets/access-token/reveal',
-            route('secrets.reveal', ['token' => 'access-token'], false),
+            '/secrets/'.str_repeat('a', 64).'/reveal',
+            route('secrets.reveal', ['secret_id' => str_repeat('a', 64)], false),
         );
         $this->assertSame(
-            '/secrets/access-token',
-            route('secrets.revoke', ['token' => 'access-token'], false),
+            '/secrets/'.str_repeat('a', 64),
+            route('secrets.revoke', ['secret_id' => str_repeat('a', 64)], false),
         );
     }
 
@@ -114,7 +114,7 @@ class Laravel13CompatibilityTest extends TestCase
         );
         $this->assertCount(
             1,
-            (new ReflectionMethod(Secret::class, 'withAccessToken'))
+            (new ReflectionMethod(Secret::class, 'withSecretId'))
                 ->getAttributes(Scope::class),
         );
         $this->assertCount(

@@ -46,9 +46,9 @@ class SecretController extends Controller
     #[Middleware('throttle:secret-access')]
     public function show(
         Request $request,
-        string $token,
+        string $secretId,
     ): InertiaResponse|JsonResponse {
-        $secret = Secret::query()->withAccessToken($token)->first();
+        $secret = Secret::query()->withSecretId($secretId)->first();
 
         if (! $secret) {
             return $this->unavailable(
@@ -67,7 +67,7 @@ class SecretController extends Controller
         }
 
         return Inertia::render('Secret', [
-            'token' => $token,
+            'secret_id' => $secretId,
             'has_password' => $secret->hasPassword(),
             'expired_at' => $secret->expired_at->toIso8601String(),
         ]);
@@ -100,10 +100,11 @@ class SecretController extends Controller
     public function reveal(
         RevealSecretRequest $request,
         RevealSecret $revealSecret,
-        string $token,
+        string $secretId,
     ): JsonResponse {
         $content = $revealSecret->handle(
-            $token,
+            $secretId,
+            $request->validated('access_token'),
             $request->validated('password'),
         );
 
@@ -124,9 +125,9 @@ class SecretController extends Controller
     public function revoke(
         RevokeSecretRequest $request,
         RevokeSecret $revokeSecret,
-        string $token,
+        string $secretId,
     ): Response {
-        $revokeSecret->handle($token, $request->validated('revocation_token'));
+        $revokeSecret->handle($secretId, $request->validated('revocation_token'));
 
         return response()->noContent()
             ->withHeaders(['Cache-Control' => 'no-store']);

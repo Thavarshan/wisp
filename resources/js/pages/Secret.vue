@@ -10,19 +10,23 @@ import { Input } from '@/components/ui/input';
 import { useRevealSecret } from '@/composables/useRevealSecret';
 import { useSecretTimer } from '@/composables/useSecretTimer';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { consumeAccessToken } from '@/lib/secretLink';
+import { MAX_PASSWORD_BYTES } from '@/types/secret';
 import { Head, Link } from '@inertiajs/vue3';
 import { AlertCircle, Check, Eye, LoaderCircle, ShieldAlert, Trash2 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
-    token: string;
+    secret_id: string;
     has_password: boolean;
     expired_at: string;
 }>();
 
 const password = ref('');
+const accessToken = ref(window.__wispAccessToken ?? null);
+window.__wispAccessToken = null;
 const expiredByTimer = ref(false);
 const { status, content, error, reveal, markExpired, clear } = useRevealSecret();
 const { countdown } = useSecretTimer(props.expired_at, () => {
@@ -32,7 +36,11 @@ const { countdown } = useSecretTimer(props.expired_at, () => {
 
 const isUnavailable = computed(() => expiredByTimer.value || status.value === 'expired' || status.value === 'consumed');
 const canSubmit = computed(
-    () => !isUnavailable.value && (status.value === 'ready' || status.value === 'error') && (!props.has_password || Boolean(password.value)),
+    () =>
+        Boolean(accessToken.value) &&
+        !isUnavailable.value &&
+        (status.value === 'ready' || status.value === 'error') &&
+        (!props.has_password || Boolean(password.value)),
 );
 
 const heading = computed(() => {
@@ -45,11 +53,33 @@ const heading = computed(() => {
 });
 
 async function handleReveal() {
-    if (!canSubmit.value) return;
+    if (!canSubmit.value || !accessToken.value) return;
 
-    await reveal(props.token, props.has_password ? password.value : null);
+    await reveal(props.secret_id, accessToken.value, props.has_password ? password.value : null);
     password.value = '';
+
+    if (status.value === 'revealed' || status.value === 'expired' || status.value === 'consumed') {
+        accessToken.value = null;
+    }
 }
+
+onBeforeUnmount(() => {
+    window.removeEventListener('hashchange', handleHashChange);
+    accessToken.value = null;
+    password.value = '';
+});
+
+function handleHashChange() {
+    const token = consumeAccessToken();
+
+    if (token && !isUnavailable.value && status.value !== 'revealed' && status.value !== 'cleared') {
+        accessToken.value = token;
+    }
+}
+
+onMounted(() => {
+    window.addEventListener('hashchange', handleHashChange);
+});
 </script>
 
 <template>
@@ -76,12 +106,18 @@ async function handleReveal() {
             </CardHeader>
 
             <CardContent class="space-y-5 pt-6">
-                <Alert v-if="status === 'ready' || status === 'revealing'" class="border-primary/20 bg-primary/5">
+                <Alert v-if="status === 'ready' && accessToken" class="border-primary/20 bg-primary/5">
                     <ShieldAlert class="size-4 text-primary" aria-hidden="true" />
                     <AlertTitle>One-time access</AlertTitle>
                     <AlertDescription>
                         The message is decrypted only for this request and cannot be retrieved again after a successful reveal.
                     </AlertDescription>
+                </Alert>
+
+                <Alert v-if="status === 'ready' && !accessToken" variant="destructive">
+                    <AlertCircle class="size-4" aria-hidden="true" />
+                    <AlertTitle>Secure link key missing</AlertTitle>
+                    <AlertDescription>Open the original share link again. The key is never retained after this page is refreshed.</AlertDescription>
                 </Alert>
 
                 <Alert v-if="status === 'revealed'" class="border-emerald-500/30 bg-emerald-500/5 text-foreground">
@@ -110,10 +146,11 @@ async function handleReveal() {
                             v-model="password"
                             type="password"
                             autocomplete="off"
-                            :disabled="isUnavailable || status === 'revealing'"
+                            :disabled="isUnavailable || status === 'revealing' || !accessToken"
                             :aria-invalid="Boolean(error)"
                             aria-describedby="password-help password-error"
                             placeholder="Enter the password shared with you"
+                            :maxlength="MAX_PASSWORD_BYTES"
                             @keyup.enter="handleReveal"
                         />
                         <p id="password-help" class="text-xs text-muted-foreground">The password is never stored by Wisp.</p>

@@ -7,7 +7,7 @@ export function useRevokeSecret() {
     const status = ref<RevokeSecretStatus>('idle');
     const error = ref('');
 
-    async function revoke(token: string, revocationToken: string): Promise<boolean> {
+    async function revoke(secretId: string, revocationToken: string): Promise<boolean> {
         if (status.value === 'revoking' || status.value === 'revoked') {
             return false;
         }
@@ -16,7 +16,7 @@ export function useRevokeSecret() {
         error.value = '';
 
         try {
-            await revokeSecret(token, revocationToken);
+            await revokeSecret(secretId, revocationToken);
             status.value = 'revoked';
 
             return true;

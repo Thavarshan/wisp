@@ -17,8 +17,8 @@ describe('secretApi', () => {
             vi.fn().mockResolvedValue(
                 new Response(
                     JSON.stringify({
-                        access_token: 'access-token',
-                        share_url: 'https://wisp.test/secrets/access-token',
+                        secret_id: 'a'.repeat(64),
+                        share_url: `https://wisp.test/secrets/${'a'.repeat(64)}#${'b'.repeat(64)}`,
                         revocation_token: 'revocation-token',
                         expires_at: '2026-08-30T12:00:00Z',
                         expiration: { value: '1h', label: '1 hour' },
@@ -29,9 +29,9 @@ describe('secretApi', () => {
         );
 
         await expect(createSecret({ content: 'private', expiration: '1h', password: 'passphrase' })).resolves.toMatchObject({
-            accessToken: 'access-token',
+            secretId: 'a'.repeat(64),
             revocationToken: 'revocation-token',
-            shareUrl: 'https://wisp.test/secrets/access-token',
+            shareUrl: `https://wisp.test/secrets/${'a'.repeat(64)}#${'b'.repeat(64)}`,
             password: 'passphrase',
         });
     });

@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, nextTick } from 'vue';
 
 const secret: CreatedSecret = {
-    accessToken: 'access-token',
-    shareUrl: 'https://wisp.test/secrets/access-token',
+    secretId: 'a'.repeat(64),
+    shareUrl: `https://wisp.test/secrets/${'a'.repeat(64)}#${'b'.repeat(64)}`,
     revocationToken: 'revocation-token',
     expiresAt: '2026-08-30T12:00:00Z',
     expiration: { value: '1h', label: '1 hour' },
@@ -34,7 +34,7 @@ describe('SecretShareResult', () => {
     beforeEach(() => {
         vi.stubGlobal(
             'route',
-            vi.fn(() => '/secrets/access-token'),
+            vi.fn(() => `/secrets/${'a'.repeat(64)}`),
         );
     });
 

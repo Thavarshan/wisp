@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\ExpirationOption;
 use App\Models\Secret;
+use App\Rules\BcryptPassword;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -39,7 +40,7 @@ class StoreSecretRequest extends FormRequest
             'password' => [
                 'nullable',
                 'string',
-                'max:'.Secret::MAX_PASSWORD_LENGTH,
+                new BcryptPassword,
             ],
         ];
     }
@@ -56,7 +57,7 @@ class StoreSecretRequest extends FormRequest
             'content.max' => 'Secret content may not exceed :max characters.',
             'expiration.required' => 'Choose when this secret should expire.',
             'expiration.enum' => 'Choose a valid expiration option.',
-            'password.max' => 'The password may not exceed :max characters.',
+            'password.bcrypt_password' => 'The password may not exceed 72 UTF-8 bytes and may not contain null characters.',
         ];
     }
 }

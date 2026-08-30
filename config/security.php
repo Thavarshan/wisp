@@ -51,6 +51,7 @@ return [
             'default-src' => "'self'",
             'script-src' => "'self'",
             'style-src' => "'self'",
+            'style-src-attr' => "'unsafe-inline'",
             'font-src' => "'self'",
             'img-src' => "'self' data:",
             'connect-src' => "'self'",

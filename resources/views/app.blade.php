@@ -8,7 +8,7 @@
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
         @vite(['resources/js/app.ts', 'resources/css/app.css'])
         @inertiaHead
-        <script>
+        <script nonce="{{ request()->attributes->get('csp_nonce') }}">
             (() => {
                 const appearance = localStorage.getItem('appearance');
                 const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

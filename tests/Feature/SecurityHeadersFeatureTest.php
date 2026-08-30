@@ -25,12 +25,15 @@ class SecurityHeadersFeatureTest extends TestCase
         $this->assertStringContainsString("object-src 'none'", $csp);
         $this->assertStringContainsString("frame-ancestors 'none'", $csp);
         $this->assertStringContainsString("form-action 'self'", $csp);
+        preg_match("/script-src 'self' 'nonce-([^']+)'/", $csp, $matches);
+        $this->assertNotEmpty($matches[1] ?? null);
+        $this->assertStringContainsString('nonce="'.$matches[1].'"', $response->getContent());
     }
 
     public function test_secret_pages_are_not_cacheable_or_indexable(): void
     {
         $created = app(CreateSecret::class)->handle(['content' => 'header test', 'expiration' => ExpirationOption::ONE_DAY->value, 'password' => null]);
-        $this->get(route('secrets.show', ['token' => $created['access_token']]))
+        $this->get(route('secrets.show', ['secret_id' => $created['secret_id']]))
             ->assertHeader('Cache-Control', 'no-store, private')
             ->assertHeader('X-Robots-Tag', 'noindex, noarchive');
     }

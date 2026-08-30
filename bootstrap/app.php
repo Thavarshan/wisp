@@ -18,6 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Middleware is configured before the config repository is booted.
         $middleware->trustProxies(at: env('TRUSTED_PROXIES'));
+        $middleware->trustHosts(
+            at: fn (): array => ($host = parse_url(config('app.url'), PHP_URL_HOST))
+                ? ['^'.preg_quote($host, '/').'$']
+                : [],
+            subdomains: false,
+        );
         $middleware->encryptCookies();
         $middleware->preventRequestForgery(originOnly: true);
 

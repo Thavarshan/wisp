@@ -3,8 +3,9 @@
 ## Summary
 
 Wisp was upgraded from Laravel 12.68.0 to Laravel 13.29.0 on PHP 8.3+.
-The existing encrypted, one-time secret lifecycle, response contracts, public
-URLs, rate limits, no-store headers, and scheduled pruning were preserved.
+The existing encrypted, one-time secret lifecycle, rate limits, no-store
+headers, and scheduled pruning were preserved. The public-link protocol was
+intentionally changed to remove bearer tokens from HTTP request paths.
 
 The upgrade followed the Laravel 13 upgrade guide and the Laravel Boost 2
 upgrade-laravel-v13 checklist. The Boost workflow is available through Boost's
@@ -93,7 +94,8 @@ array_last helpers requiring migration.
 
 - APP_KEY was not changed.
 - Secret content remains encrypted at rest; passwords remain hashed; only
-  SHA-256 token hashes are stored.
+  SHA-256 token hashes are stored. New share URLs put the public token hash in
+  the path and the raw access token in the URL fragment.
 - Reveal remains transactional and one-time, and successful responses remain
   no-store and noindex.
 - PreventRequestForgery remains in Laravel's web middleware group and is
@@ -135,17 +137,21 @@ controller attributes, and origin-only forgery behavior.
 1. Select PHP 8.3 or newer and Node.js 22.
 2. Set APP_ENV=production and APP_DEBUG=false.
 3. Keep the deployed APP_KEY unchanged.
-4. Set APP_URL=https://wisp.thavarshan.com.
+4. Set APP_URL to the one canonical HTTPS hostname.
 5. Set SESSION_SECURE_COOKIE=true.
 6. Configure TRUSTED_PROXIES with only TLS-terminating proxy addresses or CIDRs.
 7. Configure CACHE_PREFIX=wisp_cache_, REDIS_PREFIX=wisp_database_, and
    SESSION_COOKIE=wisp_session if overriding application defaults.
-8. Build with Composer, npm ci, and npm run build.
-9. Run php artisan migrate --force only after taking a production backup and
-   reviewing the existing migration history.
-10. Enable the scheduler to run php artisan schedule:run every minute.
-11. Verify /up, the home page, create, reveal, revoke, expiration, and
-    response no-store headers using the Cloud environment URL before switching
+8. Keep request bodies out of application, proxy, CDN, and observability logs;
+   production CSP must allow only same-origin scripts plus the generated nonce,
+   with `style-src-attr 'unsafe-inline'` for Reka positioning.
+9. Build with Composer, npm ci, and npm run build.
+10. Announce that existing secrets will be invalidated, then run php artisan
+   migrate --force only after taking a production backup and reviewing the
+   one-way secret-storage migration.
+11. Enable the scheduler to run php artisan schedule:run every minute.
+12. Verify /up, the home page, create, reveal, revoke, expiration, and
+   response no-store headers using the Cloud environment URL before switching
     traffic.
 
 Laravel Cloud manages deployment, web processes, and scheduler configuration

@@ -12,22 +12,33 @@ class RevealSecret
     /**
      * Reveal and permanently delete a secret in one transaction.
      *
-     * @param  string  $accessToken  The raw access token from the share URL.
+     * @param  string  $secretId  The public secret identifier from the URL.
+     * @param  mixed  $accessToken  The raw access token from the URL fragment.
      * @param  string|null  $password  The password supplied by the recipient.
      * @return string The decrypted secret content.
      */
     public function handle(
-        string $accessToken,
+        string $secretId,
+        mixed $accessToken,
         ?string $password = null,
     ): string {
         return DB::transaction(
-            function () use ($accessToken, $password): string {
+            function () use ($secretId, $accessToken, $password): string {
                 $secret = Secret::query()
-                    ->withAccessToken($accessToken)
+                    ->withSecretId($secretId)
                     ->lockForUpdate()
                     ->first();
 
-                abort_unless($secret, 404);
+                abort_unless(
+                    $secret
+                        && is_string($accessToken)
+                        && preg_match('/\A[0-9a-f]{64}\z/', $accessToken)
+                        && hash_equals(
+                            $secret->access_token_hash,
+                            Secret::hashToken($accessToken),
+                        ),
+                    404,
+                );
                 abort_if($secret->hasExpired(), 410, 'Secret has expired.');
 
                 if ($secret->hasPassword()) {

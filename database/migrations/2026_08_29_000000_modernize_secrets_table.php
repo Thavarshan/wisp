@@ -24,13 +24,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('secrets', function (Blueprint $table): void {
-            $table->dropUnique(['access_token_hash']);
-            $table->dropUnique(['revocation_token_hash']);
-            $table->dropIndex(['expired_at']);
-            $table->dropColumn(['access_token_hash', 'revocation_token_hash']);
-            $table->string('uid')->nullable();
-            $table->string('name')->nullable();
-        });
+        throw new RuntimeException(
+            'The secrets table modernization is irreversible; restore the database backup instead.',
+        );
     }
 };

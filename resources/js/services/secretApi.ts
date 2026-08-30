@@ -25,7 +25,7 @@ function apiRoute(name: string, params?: Record<string, string>): string {
 }
 
 interface CreatedSecretResponse {
-    access_token: string;
+    secret_id: string;
     share_url: string;
     revocation_token: string;
     expires_at: string;
@@ -154,7 +154,7 @@ export async function createSecret(payload: CreateSecretPayload, signal?: AbortS
     });
 
     return {
-        accessToken: result.access_token,
+        secretId: result.secret_id,
         shareUrl: result.share_url,
         revocationToken: result.revocation_token,
         expiresAt: result.expires_at,
@@ -163,16 +163,16 @@ export async function createSecret(payload: CreateSecretPayload, signal?: AbortS
     };
 }
 
-export function revealSecret(token: string, payload: RevealSecretPayload, signal?: AbortSignal): Promise<RevealedSecret> {
-    return request<RevealedSecret>(apiRoute('secrets.reveal', { token }), {
+export function revealSecret(secretId: string, payload: RevealSecretPayload, signal?: AbortSignal): Promise<RevealedSecret> {
+    return request<RevealedSecret>(apiRoute('secrets.reveal', { secret_id: secretId }), {
         method: 'POST',
         body: JSON.stringify(payload),
         signal,
     });
 }
 
-export function revokeSecret(token: string, revocationToken: string, signal?: AbortSignal): Promise<void> {
-    return request<void>(apiRoute('secrets.revoke', { token }), {
+export function revokeSecret(secretId: string, revocationToken: string, signal?: AbortSignal): Promise<void> {
+    return request<void>(apiRoute('secrets.revoke', { secret_id: secretId }), {
         method: 'DELETE',
         body: JSON.stringify({ revocation_token: revocationToken }),
         signal,

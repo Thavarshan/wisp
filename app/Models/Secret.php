@@ -28,7 +28,7 @@ class Secret extends Model
 {
     public const MAX_CONTENT_LENGTH = 10000;
 
-    public const MAX_PASSWORD_LENGTH = 255;
+    public const MAX_PASSWORD_BYTES = 72;
 
     /**
      * @use HasFactory<SecretFactory>
@@ -43,11 +43,11 @@ class Secret extends Model
      * @return Builder<self> The constrained query builder.
      */
     #[Scope]
-    protected function withAccessToken(
+    protected function withSecretId(
         Builder $query,
-        string $token,
+        string $secretId,
     ): void {
-        $query->where('access_token_hash', self::hashToken($token));
+        $query->where('access_token_hash', $secretId);
     }
 
     /**

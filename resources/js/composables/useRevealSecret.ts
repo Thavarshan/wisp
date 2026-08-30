@@ -9,7 +9,7 @@ export function useRevealSecret() {
     const content = ref<string | null>(null);
     const error = ref('');
 
-    async function reveal(token: string, password: string | null): Promise<RevealedSecret | null> {
+    async function reveal(secretId: string, accessToken: string, password: string | null): Promise<RevealedSecret | null> {
         if (status.value === 'revealing' || status.value === 'revealed') {
             return null;
         }
@@ -18,7 +18,7 @@ export function useRevealSecret() {
         error.value = '';
 
         try {
-            const result = await revealSecret(token, { password });
+            const result = await revealSecret(secretId, { access_token: accessToken, password });
 
             content.value = result.content;
             status.value = 'revealed';
