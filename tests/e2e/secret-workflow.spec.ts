@@ -4,9 +4,8 @@ test.describe('secret workflow', () => {
     test('supports appearance selection and contextual help', async ({ page }) => {
         await page.goto('/');
 
-        await page.getByRole('button', { name: 'Choose appearance' }).click();
-        await expect(page.getByRole('menuitemradio', { name: 'Dark' })).toBeVisible();
-        await page.getByRole('menuitemradio', { name: 'Dark' }).click();
+        await expect(page.getByRole('group', { name: 'Choose appearance' })).toBeVisible();
+        await page.getByRole('button', { name: 'Use Dark appearance' }).click();
         await expect(page.locator('html')).toHaveClass(/dark/);
 
         await page.getByRole('button', { name: 'More about secret content' }).click();
